@@ -10,7 +10,6 @@ export default function AuthProvider({ children }) {
     const initAuth = async () => {
       try {
         const user = await getProfile();
-        console.log(user);
         setUser(user);
       } catch {
         finishLoading();

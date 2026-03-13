@@ -1,3 +1,9 @@
+import Navbar from '../components/Navbar';
 export default function Dashboard() {
-  return <p> DashBoard</p>;
+  return (
+    <>
+      <Navbar />
+      <p> DashBoard</p>
+    </>
+  );
 }
