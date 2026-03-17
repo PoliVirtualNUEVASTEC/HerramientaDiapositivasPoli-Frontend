@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import '../styles/home.css';
-import { ArrowRight, LogOut } from 'lucide-react';
+import { LogIn, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { logout } from '../services/authService';
@@ -41,7 +41,7 @@ export default function Navbar() {
           className="login-btn"
           onClick={() => navigate('/login')}
         >
-          Iniciar Sesión <ArrowRight />
+          <LogIn size={15} /> Iniciar Sesión
         </button>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

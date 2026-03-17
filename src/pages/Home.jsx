@@ -35,7 +35,11 @@ export default function Home() {
               Comenzar Gratis <ArrowRight />
             </button>
 
-            <button type="button" className="secondary-btn">
+            <button
+              type="button"
+              className="secondary-btn"
+              onClick={() => navigate('/register')}
+            >
               Registrarse
             </button>
           </div>
