@@ -1,0 +1,218 @@
+.dashboard-container {
+  min-height: 100vh;
+  width: 100%;
+  background-image: url("/images/background.jpg");
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 80px;
+}
+
+.dashboard-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.50);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 0;
+}
+
+.dashboard-card {
+  position: relative;
+  z-index: 1;
+  background: white;
+  width: 680px;
+  max-width: 92%;
+  padding: 36px 40px 32px;
+  border-radius: 16px;
+  text-align: left;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  margin-top: 20px;
+}
+
+.dashboard-card h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: #1a4d1a;
+  font-weight: 700;
+}
+
+.dashboard-card p {
+  color: #555;
+  margin-bottom: 22px;
+  font-size: 14px;
+}
+
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  background: #f0f0f0;
+  border-radius: 10px;
+  padding: 4px;
+  width: fit-content;
+}
+
+.tab-btn {
+  border: none;
+  padding: 9px 22px;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  color: #555;
+  transition: 0.2s;
+}
+
+.tab-btn:hover {
+  background: #e0e0e0;
+}
+
+.tab-btn.active {
+  background: #1a5c1a;
+  color: white;
+}
+
+.text-input {
+  width: 100%;
+  height: 180px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  padding: 15px;
+  resize: none;
+  font-size: 14px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.upload-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.pdf-upload {
+  border: 1.5px dashed #c5d9c5;
+  border-radius: 12px;
+  padding: 36px 24px;
+  cursor: pointer;
+  transition: 0.2s;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.pdf-upload.dragging {
+  border-color: #1a5c1a;
+  background: #f0f7f0;
+}
+
+.pdf-upload:hover {
+  border-color: #2d7a2d;
+  background: #f6fbf6;
+}
+
+.pdf-upload-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.upload-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 4px;
+}
+
+.upload-subtitle {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 4px;
+}
+
+.upload-size {
+  font-size: 12px;
+  color: #aaa;
+  margin: 0;
+}
+
+.file-name {
+  display: block;
+  margin-top: 10px;
+  color: #1a5c1a;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.btn-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.generate-btn {
+  border: none;
+  padding: 11px 22px;
+  border-radius: 8px;
+  background: #1a5c1a;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.generate-btn:hover {
+  background: #145214;
+}
+
+.generate-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.pdf-upload.dragging {
+  border-color: #1a5c1a;
+  background: #f0f7f0;
+}
+
+.slides-container {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.slides-container h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a4d1a;
+  margin-bottom: 4px;
+}
+
+.slide {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 16px;
+  background: #fafafa;
+}
+
+.slide h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.slide p {
+  font-size: 13px;
+  color: #555;
+  margin: 0;
+}
