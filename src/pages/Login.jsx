@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { getProfile, login } from '../services/authService';
 import { useAuthStore } from '../store/authStore';
 import '../styles/login.css';
+import { toast } from 'sonner';
+import { Logo } from '../components/Logo';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -26,7 +28,7 @@ export default function Login() {
 
       navigate('/dashboard');
     } catch (_err) {
-      alert('Credenciales incorrectas');
+      toast.error('Credenciales Incorrectas');
     } finally {
       setLoading(false);
     }
@@ -74,7 +76,7 @@ export default function Login() {
             ¿No tienes cuenta? <span>Regístrate</span>
           </p>
 
-          <div className="brand">💻 PresentAI</div>
+          <Logo />
         </form>
       </div>
     </div>

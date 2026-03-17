@@ -1,4 +1,5 @@
 import '../styles/home.css';
+import { ArrowRight, FileText, Sparkles, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
@@ -31,7 +32,7 @@ export default function Home() {
               className="primary-btn"
               onClick={() => navigate('/dashboard')}
             >
-              Comenzar Gratis →
+              Comenzar Gratis <ArrowRight />
             </button>
 
             <button type="button" className="secondary-btn">
@@ -44,7 +45,9 @@ export default function Home() {
       {/* Features */}
       <section className="features">
         <div className="feature-card">
-          <div className="feature-icon yellow">🧠</div>
+          <div className="feature-icon yellow">
+            <Sparkles color="white" size={35} />
+          </div>
 
           <h3>Generación Automática</h3>
 
@@ -55,7 +58,9 @@ export default function Home() {
         </div>
 
         <div className="feature-card">
-          <div className="feature-icon green">⚡</div>
+          <div className="feature-icon green">
+            <Zap color="white" size={35} />
+          </div>
 
           <h3>Rápido y Eficiente</h3>
 
@@ -66,13 +71,15 @@ export default function Home() {
         </div>
 
         <div className="feature-card">
-          <div className="feature-icon gradient">📄</div>
+          <div className="feature-icon gradient">
+            <FileText color="white" size={35} />
+          </div>
 
           <h3>Compatibilidad Total</h3>
 
           <p>
-            Sube archivos de texto, PDF o escribe directamente. Soportamos todos
-            los formatos populares.
+            Modifica tus presentaciones directamente en la aplicacion o
+            exportalos a tus formatos preferidos.
           </p>
         </div>
       </section>

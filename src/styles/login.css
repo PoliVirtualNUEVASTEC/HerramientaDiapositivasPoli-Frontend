@@ -20,6 +20,10 @@
 .login-content {
   position: relative;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 .login-content h1 {

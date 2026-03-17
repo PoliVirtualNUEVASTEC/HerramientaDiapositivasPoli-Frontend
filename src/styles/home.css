@@ -39,11 +39,19 @@ body {
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   font-size: 18px;
   font-weight: 600;
 }
 
 .login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   background: white;
   border: 1px solid #ddd;
 
@@ -58,6 +66,11 @@ body {
 
 .login-btn:hover {
   background: #f5f5f5;
+}
+
+.logout-btn:hover {
+  background: red;
+  color: white;
 }
 
 /* HERO */
@@ -131,6 +144,10 @@ body {
 }
 
 .primary-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   background: #1f7a4c;
   color: white;
 
@@ -189,6 +206,11 @@ body {
 /* CARD */
 
 .feature-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-direction: column;
   background: white;
 
   width: 280px;
@@ -212,23 +234,24 @@ body {
 /* ICONOS */
 
 .feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   font-size: 28px;
-
   padding: 15px;
-
+  width: min-content;
   border-radius: 12px;
-
-  display: inline-block;
 
   margin-bottom: 15px;
 }
 
 .yellow {
-  background: #f8e59c;
+  background: #f1c40f;
 }
 
 .green {
-  background: #b7e4c7;
+  background: #1f7a4c;
 }
 
 .gradient {
