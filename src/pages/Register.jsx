@@ -1,18 +1,19 @@
+import '../styles/login.css';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProfile, login } from '../services/authService';
-import { useAuthStore } from '../store/authStore';
+import { register } from '../services/authService';
 import '../styles/login.css';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Logo } from '../components/Logo';
 
-export default function Login() {
+export default function Register() {
   const navigate = useNavigate();
-  const setUser = useAuthStore((s) => s.setUser);
 
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -21,15 +22,15 @@ export default function Login() {
     try {
       setLoading(true);
 
-      await login(email, password);
+      await register(email, password, fullName);
 
-      const user = await getProfile();
-
-      setUser(user);
-
-      navigate('/dashboard');
-    } catch (_err) {
-      toast.error('Credenciales Incorrectas');
+      navigate('/login');
+      toast.success('Usuario Registrado!', {
+        style: { background: 'green', color: 'white' },
+      });
+    } catch (err) {
+      if (err.status === 409) return toast.error('Correo ya existente');
+      toast.error('Error registrando usuario');
     } finally {
       setLoading(false);
     }
@@ -40,11 +41,20 @@ export default function Login() {
       <div className="login-overlay" />
 
       <div className="login-content">
-        <h1>Bienvenido de nuevo</h1>
+        <h1>Bienvenido</h1>
 
-        <p className="subtitle">Ingresa tu cuenta para continuar</p>
+        <p className="subtitle">Crea una cuenta para comenzar</p>
 
         <form className="login-card" onSubmit={handleSubmit}>
+          <label htmlFor="fullName">Nombre</label>
+          <input
+            name="fullName"
+            type="text"
+            placeholder="Juan Perez"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+          />
           <label htmlFor="email">Correo</label>
           <input
             name="email"
@@ -65,16 +75,22 @@ export default function Login() {
             required
           />
 
+          <label htmlFor="confirmPassword">Confirmar contraseña</label>
+          <input
+            name="confirmPassword"
+            type="password"
+            placeholder="*****"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+
           <button type="submit" disabled={loading}>
-            {loading ? 'Ingresando...' : 'Iniciar'}
+            {loading ? 'Registrando...' : 'Registrar'}
           </button>
 
-          <Link to="/" className="link">
-            ¿Olvidaste tu contraseña?
-          </Link>
-
           <p className="register">
-            ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
+            ¿Ya tienes una cuenta? <Link to={'/login'}>Inicia Sesión</Link>
           </p>
 
           <Logo />

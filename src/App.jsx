@@ -4,6 +4,7 @@ import AuthProvider from './auth/AuthProvider';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/home';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import ProtectedRoute from './router/ProtectedRoute';
 import SesionRoute from './router/SesionRoute';
 
@@ -20,6 +21,14 @@ function App() {
               element={
                 <SesionRoute>
                   <Login />
+                </SesionRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <SesionRoute>
+                  <Register />
                 </SesionRoute>
               }
             />
