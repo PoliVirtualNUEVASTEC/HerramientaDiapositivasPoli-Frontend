@@ -1,90 +1,96 @@
-import { useState } from 'react'
-import { toast } from 'sonner'
-import { uploadPDF, sendText } from '../services/presentationService'
-import { useAuthStore } from '../store/authStore'
-import Navbar from '../components/Navbar'
-import '../styles/dashboard.css'
+import { useState } from 'react';
+import { toast } from 'sonner';
+import Navbar from '../components/Navbar';
+import { sendText, uploadPDF } from '../services/presentationService';
+import { useAuthStore } from '../store/authStore';
+import '../styles/dashboard.css';
+import { ArrowUpFromLine } from 'lucide-react';
 
 export default function Dashboard() {
-  const user = useAuthStore((s) => s.user)
+  const user = useAuthStore((s) => s.user);
 
-  const [mode, setMode] = useState('pdf')
-  const [file, setFile] = useState(null)
-  const [text, setText] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [dragging, setDragging] = useState(false)
+  const [mode, setMode] = useState('pdf');
+  const [file, setFile] = useState(null);
+  const [text, setText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [dragging, setDragging] = useState(false);
 
   const validateAndSet = (selected) => {
-    if (!selected) return
+    if (!selected) return;
     if (selected.type !== 'application/pdf') {
-      toast.error('Solo se permiten archivos PDF')
-      return
+      toast.error('Solo se permiten archivos PDF');
+      return;
     }
     if (selected.size > 3 * 1024 * 1024) {
-      toast.error('El archivo supera los 3MB')
-      return
+      toast.error('El archivo supera los 3MB');
+      return;
     }
-    setFile(selected)
-  }
+    setFile(selected);
+  };
 
   const handleDragOver = (e) => {
-    e.preventDefault()
-    setDragging(true)
-  }
+    e.preventDefault();
+    setDragging(true);
+  };
 
-  const handleDragLeave = () => setDragging(false)
+  const handleDragLeave = () => setDragging(false);
 
   const handleDrop = (e) => {
-    e.preventDefault()
-    setDragging(false)
-    validateAndSet(e.dataTransfer.files[0])
-  }
+    e.preventDefault();
+    setDragging(false);
+    validateAndSet(e.dataTransfer.files[0]);
+  };
 
   const handlePDF = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!file) {
-      toast.error('Debes seleccionar un archivo PDF')
-      return
+      toast.error('Debes seleccionar un archivo PDF');
+      return;
     }
     try {
-      setLoading(true)
-      const data = await uploadPDF(file)
-      toast.success('PDF procesado correctamente')
+      setLoading(true);
+      const data = await uploadPDF(file);
+      toast.success('PDF procesado correctamente');
     } catch (err) {
-      toast.error(err.response?.data?.error || err.message || 'Error al subir PDF')
+      toast.error(
+        err.response?.data?.error || err.message || 'Error al subir PDF',
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleText = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!text.trim()) {
-      toast.error('Debes escribir un texto')
-      return
+      toast.error('Debes escribir un texto');
+      return;
     }
     try {
-      setLoading(true)
-      const data = await sendText(text)
-      toast.success('Texto procesado correctamente')
+      setLoading(true);
+      const data = await sendText(text);
+      toast.success('Texto procesado correctamente');
     } catch (err) {
-      toast.error(err.response?.data?.error || err.message || 'Error al enviar texto')
+      toast.error(
+        err.response?.data?.error || err.message || 'Error al enviar texto',
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="dashboard-container">
-
       <div className="dashboard-overlay" />
 
       <Navbar />
 
       <div className="dashboard-card">
-
         <h1>Crear nueva presentación</h1>
-        <p>Ingresa el texto o sube un archivo para generar tu presentación automáticamente</p>
+        <p>
+          Ingresa el texto o sube un archivo para generar tu presentación
+          automáticamente
+        </p>
 
         <div className="tabs">
           <button
@@ -113,16 +119,33 @@ export default function Dashboard() {
               onDrop={handleDrop}
             >
               <div className="pdf-upload-icon">
-                <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg
+                  width="56"
+                  height="56"
+                  viewBox="0 0 56 56"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
                   <defs>
                     <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="#2d7a2d"/>
-                      <stop offset="100%" stopColor="#a8d55a"/>
+                      <stop offset="0%" stopColor="#2d7a2d" />
+                      <stop offset="100%" stopColor="#a8d55a" />
                     </linearGradient>
                   </defs>
-                  <rect width="56" height="56" rx="14" fill="url(#grad)"/>
-                  <path d="M28 36V20M28 20L21 27M28 20L35 27" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M18 38H38" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+                  <rect width="56" height="56" rx="14" fill="url(#grad)" />
+                  <path
+                    d="M28 36V20M28 20L21 27M28 20L35 27"
+                    stroke="white"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M18 38H38"
+                    stroke="white"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  />
                 </svg>
               </div>
               <p className="upload-title">Arrastra tu PDF aquí</p>
@@ -163,5 +186,5 @@ export default function Dashboard() {
         )}
       </div>
     </div>
-  )
+  );
 }
