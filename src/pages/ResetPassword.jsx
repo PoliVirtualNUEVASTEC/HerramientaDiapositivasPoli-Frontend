@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { resetPassword, validateResetToken } from '../services/authService';
+import { validatePassword, validatePasswords } from '../utils/validatesInputs';
 
 import '../styles/auth.css';
+import { toast } from 'sonner';
 
 export default function ResetPassword() {
   const [params] = useSearchParams();
@@ -12,7 +14,8 @@ export default function ResetPassword() {
 
   const [valid, setValid] = useState(null);
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
 
   // validar token al cargar
   useEffect(() => {
@@ -33,19 +36,39 @@ export default function ResetPassword() {
     if (token) checkToken();
   }, [token, navigate]);
 
+  const validateForm = () => {
+    if (!validatePassword(password)) {
+      setError(
+        'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un símbolo (@$!%*?&)',
+      );
+      return false;
+    }
+
+    if (!validatePasswords(password, confirmPassword)) {
+      setError('Las contraseñas no coinciden');
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      toast.error('Por favor completa correctamente todos los campos');
+      return;
+    }
 
     try {
       await resetPassword(token, password);
-
-      setMessage('Contraseña actualizada');
-
+      setError('');
+      toast.success('Contraseña Actualizada', {
+        style: { background: 'green', color: 'white' },
+      });
       setTimeout(() => {
         navigate('/login');
       }, 1500);
     } catch {
-      setMessage('Token inválido o expirado');
+      toast.error('Token inválido o expirado');
     }
   };
 
@@ -72,19 +95,33 @@ export default function ResetPassword() {
     <div className="auth-container">
       <div className="auth-overlay">
         <form className="auth-card" onSubmit={handleSubmit}>
-          <h2>Nueva contraseña</h2>
-
+          <h2>Cambiar Contraseña</h2>
+          <label htmlFor="password">Nueva contraseña</label>
           <input
             type="password"
-            placeholder="Nueva contraseña"
+            name="password"
+            placeholder="********"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <label htmlFor="confirmPassword">Confirmar contraseña</label>
+          <input
+            type="password"
+            name="confirmPassword"
+            placeholder="********"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
 
           <button type="submit">Guardar contraseña</button>
 
-          {message && <p className="auth-message">{message}</p>}
+          {error && (
+            <p className="auth-message" style={{ color: 'red' }}>
+              {error}
+            </p>
+          )}
         </form>
       </div>
     </div>

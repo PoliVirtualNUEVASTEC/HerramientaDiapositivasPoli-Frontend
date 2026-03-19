@@ -31,10 +31,11 @@ export default function ForgotPassword() {
       <div className="auth-overlay">
         <form className="auth-card" onSubmit={handleSubmit}>
           <h2>Recuperar contraseña</h2>
-
+          <label htmlFor="email">Ingresa tu correo</label>
           <input
             type="email"
-            placeholder="Ingresa tu correo"
+            name="email"
+            placeholder="correo@elpoli.edu.co"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
