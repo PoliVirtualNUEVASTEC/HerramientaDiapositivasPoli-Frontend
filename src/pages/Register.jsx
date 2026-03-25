@@ -4,6 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Logo } from '../components/Logo';
 import { register } from '../services/authService';
+import {
+  validateEmail,
+  validateName,
+  validatePassword,
+  validatePasswords,
+} from '../utils/validatesInputs';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -15,27 +21,6 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
-
-  // Validaciones individuales
-  const validateName = (name) => {
-    const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-    return regex.test(name) && name.trim().length > 0;
-  };
-
-  const validateEmail = (emailValue) => {
-    const regex = /^[^\s@]+@elpoli\.edu\.co$/;
-    return regex.test(emailValue);
-  };
-
-  const validatePassword = (pass) => {
-    // Mínimo 8 caracteres, 1 mayúscula, 1 número, 1 símbolo
-    const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return regex.test(pass);
-  };
-
-  const validatePasswords = (pass, confirmPass) => {
-    return pass === confirmPass && pass.length > 0;
-  };
 
   const validateField = (fieldName, value, otherPassword = '') => {
     const newErrors = { ...errors };

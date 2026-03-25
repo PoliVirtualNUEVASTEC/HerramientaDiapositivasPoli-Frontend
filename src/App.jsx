@@ -2,9 +2,11 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import AuthProvider from './auth/AuthProvider';
 import Dashboard from './pages/Dashboard';
+import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/home';
-import Login from './pages/Login';
+import Login from './pages/login';
 import Register from './pages/Register';
+import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './router/ProtectedRoute';
 import SesionRoute from './router/SesionRoute';
 
@@ -21,6 +23,22 @@ function App() {
               element={
                 <SesionRoute>
                   <Login />
+                </SesionRoute>
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                <SesionRoute>
+                  <ForgotPassword />
+                </SesionRoute>
+              }
+            />
+            <Route
+              path="/reset-password"
+              element={
+                <SesionRoute>
+                  <ResetPassword />
                 </SesionRoute>
               }
             />

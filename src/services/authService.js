@@ -27,3 +27,18 @@ export const getProfile = async () => {
 
   return res.data;
 };
+
+export const forgotPassword = (email) => {
+  return api.post('/api/auth/forgot-password', { email });
+};
+
+export const validateResetToken = (token) => {
+  return api.get(`/api/auth/validate-reset-token?token=${token}`);
+};
+
+export const resetPassword = (token, newPassword) => {
+  return api.post('/api/auth/reset-password', {
+    token,
+    newPassword,
+  });
+};

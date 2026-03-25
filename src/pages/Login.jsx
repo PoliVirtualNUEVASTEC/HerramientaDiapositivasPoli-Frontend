@@ -69,7 +69,7 @@ export default function Login() {
             {loading ? 'Ingresando...' : 'Iniciar'}
           </button>
 
-          <Link to="/" className="link">
+          <Link to="/forgot-password" className="link">
             ¿Olvidaste tu contraseña?
           </Link>
 
