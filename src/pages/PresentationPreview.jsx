@@ -1,11 +1,23 @@
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/preview.css';
+import { useEffect, useState } from 'react';
+import { getPresentation } from '../services/presentationService';
 
 export default function PresentationPreview() {
-  const { state } = useLocation();
   const navigate = useNavigate();
-  const presentation = state?.presentation;
+  const [presentation, setPresentation] = useState(null);
+  const { id } = useParams();
+
+  useEffect(() => {
+    const loadPresentation = async () => {
+      try {
+        const data = await getPresentation(id);
+        setPresentation(data);
+      } catch {}
+    };
+    loadPresentation();
+  }, [id]);
 
   if (!presentation) {
     return (
@@ -31,11 +43,19 @@ export default function PresentationPreview() {
     };
 
     if (el.type === 'title') {
-      return <h2 key={el.id} style={style}>{el.content.text}</h2>;
+      return (
+        <h2 key={el.id} style={style}>
+          {el.content.text}
+        </h2>
+      );
     }
 
     if (el.type === 'text') {
-      return <p key={el.id} style={style}>{el.content.text}</p>;
+      return (
+        <p key={el.id} style={style}>
+          {el.content.text}
+        </p>
+      );
     }
 
     if (el.type === 'list') {
@@ -67,7 +87,9 @@ export default function PresentationPreview() {
       <div className="slides-wrapper">
         {presentation.slides.map((slide, index) => (
           <div key={slide.id} className="slide-container">
-            <div className="slide-number">Slide {index + 1} — {slide.title}</div>
+            <div className="slide-number">
+              Slide {index + 1} — {slide.title}
+            </div>
             <div
               className="slide-canvas"
               style={{ backgroundColor: slide.background?.value || '#ffffff' }}

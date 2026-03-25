@@ -1,24 +1,29 @@
-import api from '../api/axios'
+import api from '../api/axios';
 
 // PDF
 export const uploadPDF = async (file) => {
-  const formData = new FormData()
-  formData.append('file', file)
+  const formData = new FormData();
+  formData.append('file', file);
 
   const res = await api.post('/api/presentations/pdf', formData, {
     headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  })
+      'Content-Type': 'multipart/form-data',
+    },
+  });
 
-  return res.data
-}
+  return res.data;
+};
 
 // TEXTO
 export const sendText = async (text) => {
   const res = await api.post('/api/presentations/text', {
-    text
-  })
+    text,
+  });
 
-  return res.data
-}
+  return res.data;
+};
+
+export const getPresentation = async (id) => {
+  const res = await api.get(`/api/presentations/${id}`);
+  return res.data;
+};
