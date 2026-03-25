@@ -4,7 +4,6 @@ import Navbar from '../components/Navbar';
 import { sendText, uploadPDF } from '../services/presentationService';
 import { useAuthStore } from '../store/authStore';
 import '../styles/dashboard.css';
-import { ArrowUpFromLine } from 'lucide-react';
 
 export default function Dashboard() {
   const user = useAuthStore((s) => s.user);
