@@ -5,6 +5,8 @@
   flex-direction: column;
 }
 
+/* HEADER */
+
 .preview-header {
   display: flex;
   align-items: center;
@@ -32,6 +34,8 @@
   border-radius: 20px;
 }
 
+/* BOTÓN VOLVER */
+
 .back-btn {
   border: 1px solid #e5e7eb;
   background: white;
@@ -50,6 +54,8 @@
   color: #1a5c1a;
 }
 
+/* CONTENEDOR DE SLIDES */
+
 .slides-wrapper {
   display: flex;
   flex-direction: column;
@@ -58,9 +64,16 @@
   padding: 40px 20px;
 }
 
+/* CADA SLIDE */
+
 .slide-container {
   width: 100%;
   max-width: 960px;
+  transition: transform 0.2s ease;
+}
+
+.slide-container:hover {
+  transform: scale(1.02);
 }
 
 .slide-number {
@@ -70,14 +83,38 @@
   margin-bottom: 8px;
 }
 
+/* LIENZO DE LA DIAPOSITIVA */
+
 .slide-canvas {
   position: relative;
   width: 960px;
   height: 540px;
+
   border-radius: 12px;
   box-shadow: 0 4px 24px rgba(0,0,0,0.12);
   overflow: hidden;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
+
+/* ELEMENTOS DE TEXTO */
+
+.slide-canvas h2,
+.slide-canvas p,
+.slide-canvas ul {
+  margin: 0;
+  word-wrap: break-word;
+}
+
+/* LISTAS */
+
+.slide-canvas ul {
+  padding-left: 20px;
+}
+
+/* ERROR */
 
 .preview-error {
   display: flex;
@@ -89,7 +126,10 @@
   color: #374151;
 }
 
-/* ── Dashboard additions ── */
+/* ───────────────────────── */
+/* DASHBOARD ADDITIONS */
+/* ───────────────────────── */
+
 .dashboard-content {
   position: relative;
   z-index: 1;
