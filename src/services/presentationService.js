@@ -25,3 +25,13 @@ export const getPresentation = async (id) => {
   const res = await api.get(`/api/presentations/${id}`);
   return res.data;
 };
+
+export const getPresentations = async () => {
+  const res = await api.get(`/api/presentations/`);
+  return res.data;
+};
+
+export const deletePresentation = async (id) => {
+  const res = await api.delete(`/api/presentations/${id}`);
+  return res.data;
+};
