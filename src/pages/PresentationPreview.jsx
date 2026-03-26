@@ -2,22 +2,37 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/preview.css';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { getPresentation } from '../services/presentationService';
 
 export default function PresentationPreview() {
   const navigate = useNavigate();
   const [presentation, setPresentation] = useState(null);
+  const [loading, setLoading] = useState(false);
   const { id } = useParams();
 
   useEffect(() => {
     const loadPresentation = async () => {
       try {
+        setLoading(true);
         const data = await getPresentation(id);
         setPresentation(data);
-      } catch {}
+        setLoading(false);
+      } catch {
+        toast.error('error cargando presentación');
+        setLoading(false);
+      }
     };
     loadPresentation();
   }, [id]);
+
+  if (loading) {
+    return (
+      <div className="preview-error">
+        <p>loading...</p>
+      </div>
+    );
+  }
 
   if (!presentation) {
     return (

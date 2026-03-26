@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import mockPresentation from '../assets/presentation.json';
 import Navbar from '../components/Navbar';
-import { sendText, uploadPDF } from '../services/presentationService';
-import { useAuthStore } from '../store/authStore';
+import {
+  getPresentations,
+  sendText,
+  uploadPDF,
+} from '../services/presentationService';
 import '../styles/dashboard.css';
 
 export default function Dashboard() {
-  const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
 
   const [mode, setMode] = useState('pdf');
@@ -20,13 +22,16 @@ export default function Dashboard() {
 
   // Cargar presentaciones guardadas
   useEffect(() => {
-    const saved = localStorage.getItem('presentations');
-    if (saved) setPresentations(JSON.parse(saved));
+    const getUserPresentations = async () => {
+      const data = await getPresentations();
+      setPresentations(data);
+    };
+
+    getUserPresentations();
   }, []);
 
-  const savePresentations = (list) => {
-    setPresentations(list);
-    localStorage.setItem('presentations', JSON.stringify(list));
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('es-CO');
   };
 
   const validateAndSet = (selected) => {
@@ -61,8 +66,6 @@ export default function Dashboard() {
       title: data?.title || mockPresentation.title,
       createdAt: new Date(data.createdAt).toLocaleDateString('es-CO'),
     };
-    // const updated = [presentation, ...presentations];
-    // savePresentations(updated);
     navigate(`/preview/${presentation.id}`);
   };
 
@@ -107,8 +110,6 @@ export default function Dashboard() {
   };
 
   const handleDelete = (id) => {
-    const updated = presentations.filter((p) => p.id !== id);
-    savePresentations(updated);
     toast.success('Presentación eliminada');
   };
 
@@ -248,16 +249,14 @@ export default function Dashboard() {
                   </div>
                   <div className="presentation-info">
                     <span className="presentation-title">{p.title}</span>
-                    <span className="presentation-date">{p.createdAt}</span>
+                    <span className="presentation-date">
+                      {formatDate(p.createdAt)}
+                    </span>
                   </div>
                   <div className="presentation-actions">
                     <button
                       className="action-btn view-btn"
-                      onClick={() =>
-                        navigate(`/preview/${p.id}`, {
-                          state: { presentation: p },
-                        })
-                      }
+                      onClick={() => navigate(`/preview/${p.id}`)}
                     >
                       Ver
                     </button>
