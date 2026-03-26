@@ -4,10 +4,12 @@ import { toast } from 'sonner';
 import mockPresentation from '../assets/presentation.json';
 import Navbar from '../components/Navbar';
 import {
+  deletePresentation,
   getPresentations,
   sendText,
   uploadPDF,
 } from '../services/presentationService';
+import { showConfirm } from '../utils/confirmToast';
 import '../styles/dashboard.css';
 
 export default function Dashboard() {
@@ -110,7 +112,21 @@ export default function Dashboard() {
   };
 
   const handleDelete = (id) => {
-    toast.success('Presentación eliminada');
+    showConfirm({
+      title: 'Borrar Presentación',
+      description: 'Esta acción no se puede deshacer.',
+      onConfirm: () => {
+        deletePresentation(id);
+        const updated = presentations.filter((p) => p.id !== id);
+        setPresentations(updated);
+        toast.success('Presentación eliminada');
+      },
+      onCancel: () => {
+        /* opcional */
+      },
+      confirmText: 'Borrar',
+      cancelText: 'Volver',
+    });
   };
 
   return (
