@@ -1,16 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import mockPresentation from '../assets/presentation.json';
 import Navbar from '../components/Navbar';
-import {
-  deletePresentation,
-  getPresentations,
-  sendText,
-  uploadPDF,
-} from '../services/presentationService';
-import { showConfirm } from '../utils/confirmToast';
+import { sendText, uploadPDF } from '../services/presentationService';
 import '../styles/dashboard.css';
+import ListOfPresentations from '../components/ListofPresentations';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -20,21 +15,6 @@ export default function Dashboard() {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const [presentations, setPresentations] = useState([]);
-
-  // Cargar presentaciones guardadas
-  useEffect(() => {
-    const getUserPresentations = async () => {
-      const data = await getPresentations();
-      setPresentations(data);
-    };
-
-    getUserPresentations();
-  }, []);
-
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('es-CO');
-  };
 
   const validateAndSet = (selected) => {
     if (!selected) return;
@@ -109,24 +89,6 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDelete = (id) => {
-    showConfirm({
-      title: 'Borrar Presentación',
-      description: 'Esta acción no se puede deshacer.',
-      onConfirm: () => {
-        deletePresentation(id);
-        const updated = presentations.filter((p) => p.id !== id);
-        setPresentations(updated);
-        toast.success('Presentación eliminada');
-      },
-      onCancel: () => {
-        /* opcional */
-      },
-      confirmText: 'Borrar',
-      cancelText: 'Volver',
-    });
   };
 
   return (
@@ -244,50 +206,7 @@ export default function Dashboard() {
         </div>
 
         {/* LISTA DE PRESENTACIONES */}
-        {presentations.length > 0 && (
-          <div className="presentations-list">
-            <h2>Mis presentaciones</h2>
-            <div className="presentations-grid">
-              {presentations.map((p) => (
-                <div key={p.id} className="presentation-item">
-                  <div
-                    className="presentation-thumbnail"
-                    onClick={() =>
-                      navigate(`/preview/${p.id}`, {
-                        state: { presentation: p },
-                      })
-                    }
-                  >
-                    <div className="thumbnail-slides-count">
-                      {p.slides?.length || 0} slides
-                    </div>
-                    <div className="thumbnail-icon">🖼️</div>
-                  </div>
-                  <div className="presentation-info">
-                    <span className="presentation-title">{p.title}</span>
-                    <span className="presentation-date">
-                      {formatDate(p.createdAt)}
-                    </span>
-                  </div>
-                  <div className="presentation-actions">
-                    <button
-                      className="action-btn view-btn"
-                      onClick={() => navigate(`/preview/${p.id}`)}
-                    >
-                      Ver
-                    </button>
-                    <button
-                      className="action-btn delete-btn"
-                      onClick={() => handleDelete(p.id)}
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <ListOfPresentations />
       </div>
     </div>
   );
