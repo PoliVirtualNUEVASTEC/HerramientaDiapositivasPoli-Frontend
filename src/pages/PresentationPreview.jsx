@@ -1,14 +1,41 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/preview.css';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { getPresentation } from '../services/presentationService';
 
 export default function PresentationPreview() {
-  const { state } = useLocation();
   const navigate = useNavigate();
-  const presentation = state?.presentation;
+  const [presentation, setPresentation] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { id } = useParams();
 
   const TEMPLATE_BASE =
     'https://TU_PROJECT_ID.supabase.co/storage/v1/object/public/images/slides_1/';
+
+  useEffect(() => {
+    const loadPresentation = async () => {
+      try {
+        setLoading(true);
+        const data = await getPresentation(id);
+        setPresentation(data);
+        setLoading(false);
+      } catch {
+        toast.error('error cargando presentación');
+        setLoading(false);
+      }
+    };
+    loadPresentation();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="preview-error">
+        <p>loading...</p>
+      </div>
+    );
+  }
 
   if (!presentation) {
     return (
