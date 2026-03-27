@@ -77,6 +77,7 @@ export default function PresentationPreview() {
       return (
         <ul key={el.id} style={style}>
           {el.content.items.map((item, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: <>
             <li key={i}>{item}</li>
           ))}
         </ul>
