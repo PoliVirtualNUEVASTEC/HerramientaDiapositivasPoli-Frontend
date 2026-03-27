@@ -12,7 +12,7 @@ export default function PresentationPreview() {
   const { id } = useParams();
 
   const TEMPLATE_BASE =
-    'https://TU_PROJECT_ID.supabase.co/storage/v1/object/public/images/slides_1/';
+    'https://qftsvgnhxcqdrcarvsiq.supabase.co/storage/v1/object/public/images/slides/';
 
   useEffect(() => {
     const loadPresentation = async () => {
@@ -47,15 +47,18 @@ export default function PresentationPreview() {
   }
 
   const getTemplate = (slide, index, totalSlides) => {
+    // Primera slide
     if (index === 0) {
       return TEMPLATE_BASE + 'title_slide.jpg';
     }
 
+    // Última slide
     if (index === totalSlides - 1) {
       return TEMPLATE_BASE + 'end_slide.jpg';
     }
 
-    const hasImage = slide.elements.some((el) => el.type === 'image');
+    const hasImage =
+      slide?.elements?.some((el) => el.type === 'image') ?? false;
 
     if (hasImage) {
       return TEMPLATE_BASE + 'slide2.jpg';
@@ -81,7 +84,7 @@ export default function PresentationPreview() {
     if (el.type === 'title') {
       return (
         <h2 key={el.id} style={style}>
-          {el.content.text}
+          {el.content?.text}
         </h2>
       );
     }
@@ -89,7 +92,7 @@ export default function PresentationPreview() {
     if (el.type === 'text') {
       return (
         <p key={el.id} style={style}>
-          {el.content.text}
+          {el.content?.text}
         </p>
       );
     }
@@ -98,10 +101,20 @@ export default function PresentationPreview() {
       return (
         <ul key={el.id} style={style}>
           {el.content.items.map((item, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: <>
             <li key={i}>{item}</li>
           ))}
         </ul>
+      );
+    }
+
+    if (el.type === 'image') {
+      return (
+        <img
+          key={el.id}
+          src={el.content?.url || el.content?.image}
+          alt=""
+          style={style}
+        />
       );
     }
 
@@ -132,13 +145,19 @@ export default function PresentationPreview() {
             <div
               className="slide-canvas"
               style={{
-                backgroundImage: `url(${getTemplate(slide, index, presentation.slides.length)})`,
+                backgroundImage: `url(${getTemplate(
+                  slide,
+                  index,
+                  presentation.slides.length,
+                )})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
               }}
             >
-              {slide.elements.map((el) => renderElement(el))}
+              {/* no renderizar contenido en la última slide */}
+              {index !== presentation.slides.length - 1 &&
+                slide?.elements?.map((el) => renderElement(el))}
             </div>
           </div>
         ))}
