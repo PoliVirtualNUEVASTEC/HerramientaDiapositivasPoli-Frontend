@@ -1,12 +1,12 @@
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/preview.css';
-import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { getPresentation } from '../services/presentationService';
 import { usePresentationStore } from '../store/presentationStore';
 
-export default function PresentationPreview() {
+export default function EditPresentation() {
   const navigate = useNavigate();
   const { id } = useParams();
   const presentationFromStore = usePresentationStore(
@@ -21,60 +21,17 @@ export default function PresentationPreview() {
   const [presentation, setPresentation] = useState(
     presentationFromStore ?? null,
   );
+  const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const TEMPLATE_BASE =
     'https://qftsvgnhxcqdrcarvsiq.supabase.co/storage/v1/object/public/images/slides/';
 
-  useEffect(() => {
-    const loadPresentation = async () => {
-      if (String(presentationFromStoreId) === String(id)) {
-        setPresentation(presentationFromStoreRef.current);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const data = await getPresentation(id);
-        setPresentation(data);
-        setPresentationInStore(data);
-      } catch {
-        toast.error('error cargando presentación');
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadPresentation();
-  }, [id, presentationFromStoreId, setPresentationInStore]);
-
-  if (loading) {
-    return (
-      <div className="preview-error">
-        <p>loading...</p>
-      </div>
-    );
-  }
-
-  if (!presentation) {
-    return (
-      <div className="preview-error">
-        <p>No se encontró la presentación.</p>
-        <button onClick={() => navigate('/dashboard')}>Volver</button>
-      </div>
-    );
-  }
-
-  const handleEdit = () => {
-    navigate(`/edit/${id}`);
-  };
-
   const getTemplate = (slide, index, totalSlides) => {
-    // Primera slide
     if (index === 0) {
       return TEMPLATE_BASE.concat('title_slide.jpg');
     }
 
-    // Última slide
     if (index === totalSlides - 1) {
       return TEMPLATE_BASE.concat('end_slide.jpg');
     }
@@ -123,9 +80,8 @@ export default function PresentationPreview() {
     if (el.type === 'list') {
       return (
         <ul key={el.id} style={style}>
-          {el.content.items.map((item, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: <>
-            <li key={i}>{item}</li>
+          {el.content.items.map((item) => (
+            <li key={`${el.id}-${item}`}>{item}</li>
           ))}
         </ul>
       );
@@ -145,51 +101,96 @@ export default function PresentationPreview() {
     return null;
   };
 
+  useEffect(() => {
+    const loadPresentation = async () => {
+      if (String(presentationFromStoreId) === String(id)) {
+        setPresentation(presentationFromStoreRef.current);
+        setSelectedSlideIndex(0);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const data = await getPresentation(id);
+        setPresentation(data);
+        setPresentationInStore(data);
+        setSelectedSlideIndex(0);
+      } catch {
+        toast.error('Error cargando la presentación');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPresentation();
+  }, [id, presentationFromStoreId, setPresentationInStore]);
+
+  if (loading || !presentation) {
+    return (
+      <div className="preview-container">
+        <Navbar />
+        <div className="preview-error">
+          <p>Cargando presentación...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const selectedSlide =
+    presentation.slides[selectedSlideIndex] || presentation.slides[0];
+
   return (
     <div className="preview-container">
       <Navbar />
 
       <div className="preview-header">
-        <button className="back-btn" onClick={() => navigate('/dashboard')}>
+        <button className="back-btn" onClick={() => navigate(-1)}>
           ← Volver
         </button>
 
-        <h1>{presentation.title}</h1>
+        <h1>Editar: {presentation.title}</h1>
 
         <span className="slide-count">{presentation.slides.length} slides</span>
       </div>
-      <div className="preview-actions">
-        <button className="edit-btn" onClick={handleEdit}>
-          Editar presentación
-        </button>
-      </div>
 
-      <div className="slides-wrapper">
-        {presentation.slides.map((slide, index) => (
-          <div key={slide.id} className="slide-container">
-            <div className="slide-number">
-              Slide {index + 1} — {slide.title}
-            </div>
-
-            <div
-              className="slide-canvas"
-              style={{
-                backgroundImage: `url(${getTemplate(
-                  slide,
-                  index,
-                  presentation.slides.length,
-                )})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-              }}
-            >
-              {/* no renderizar contenido en la última slide */}
-              {index !== presentation.slides.length - 1 &&
-                slide?.elements?.map((el) => renderElement(el))}
-            </div>
+      <div className="edit-layout">
+        <aside className="edit-sidebar">
+          <div className="edit-sidebar-header">Diapositivas</div>
+          <div className="slide-list">
+            {presentation.slides.map((slide, index) => (
+              <button
+                key={slide.id}
+                type="button"
+                className={`slide-list-item ${
+                  selectedSlideIndex === index ? 'active' : ''
+                }`}
+                onClick={() => setSelectedSlideIndex(index)}
+              >
+                <span className="slide-item-number">{index + 1}</span>
+                <strong>{slide.title || 'Sin título'}</strong>
+                <p>{slide.elements?.[0]?.content?.text || 'Sin contenido'}</p>
+              </button>
+            ))}
           </div>
-        ))}
+        </aside>
+
+        <main className="edit-main-preview">
+          <div
+            className="slide-canvas"
+            style={{
+              backgroundImage: `url(${getTemplate(
+                selectedSlide,
+                selectedSlideIndex,
+                presentation.slides.length,
+              )})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+            }}
+          >
+            {selectedSlide.elements?.map((el) => renderElement(el))}
+          </div>
+        </main>
       </div>
     </div>
   );
