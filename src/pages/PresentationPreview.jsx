@@ -49,22 +49,22 @@ export default function PresentationPreview() {
   const getTemplate = (slide, index, totalSlides) => {
     // Primera slide
     if (index === 0) {
-      return TEMPLATE_BASE + 'title_slide.jpg';
+      return TEMPLATE_BASE.concat('title_slide.jpg');
     }
 
     // Última slide
     if (index === totalSlides - 1) {
-      return TEMPLATE_BASE + 'end_slide.jpg';
+      return TEMPLATE_BASE.concat('end_slide.jpg');
     }
 
     const hasImage =
       slide?.elements?.some((el) => el.type === 'image') ?? false;
 
     if (hasImage) {
-      return TEMPLATE_BASE + 'slide2.jpg';
+      return TEMPLATE_BASE.concat('slide2.jpg');
     }
 
-    return TEMPLATE_BASE + 'slide1.jpg';
+    return TEMPLATE_BASE.concat('slide1.jpg');
   };
 
   const renderElement = (el) => {
@@ -101,6 +101,7 @@ export default function PresentationPreview() {
       return (
         <ul key={el.id} style={style}>
           {el.content.items.map((item, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: <>
             <li key={i}>{item}</li>
           ))}
         </ul>
