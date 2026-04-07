@@ -1,9 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/preview.css';
-import { toast } from 'sonner';
-import { getPresentation } from '../services/presentationService';
+import {
+  Bold,
+  CaseSensitive,
+  Italic,
+  List,
+  ListChecks,
+  ListOrdered,
+  Underline,
+} from 'lucide-react';
+import EditToolbar from '../components/EditToolbar';
+import SlideCanvas from '../components/SlideCanvas';
+import SlideSidebar from '../components/SlideSidebar';
+import { usePresentationLoader } from '../hooks/usePresentationLoader';
 import { usePresentationStore } from '../store/presentationStore';
 
 export default function EditPresentation() {
@@ -12,17 +23,18 @@ export default function EditPresentation() {
   const presentationFromStore = usePresentationStore(
     (state) => state.presentation,
   );
-  const presentationFromStoreId = presentationFromStore?.id;
-  const presentationFromStoreRef = useRef(presentationFromStore);
-  presentationFromStoreRef.current = presentationFromStore;
   const setPresentationInStore = usePresentationStore(
     (state) => state.setPresentation,
   );
-  const [presentation, setPresentation] = useState(
-    presentationFromStore ?? null,
+  const { presentation, loading } = usePresentationLoader(
+    id,
+    presentationFromStore,
+    setPresentationInStore,
   );
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [selectedElement, setSelectedElement] = useState(null);
+  const [activeToolbarButtons, setActiveToolbarButtons] = useState([]);
+  const [fontSizeValue, setFontSizeValue] = useState(16);
 
   const TEMPLATE_BASE =
     'https://qftsvgnhxcqdrcarvsiq.supabase.co/storage/v1/object/public/images/slides/';
@@ -46,84 +58,59 @@ export default function EditPresentation() {
     return TEMPLATE_BASE.concat('slide1.jpg');
   };
 
-  const renderElement = (el) => {
-    const style = {
-      position: 'absolute',
-      left: el.positionX,
-      top: el.positionY,
-      width: el.width,
-      height: el.height,
-      fontSize: el.styles?.fontSize,
-      fontWeight: el.styles?.fontWeight,
-      color: el.styles?.color,
-      textAlign: el.styles?.textAlign,
-      lineHeight: el.styles?.lineHeight,
-      borderRadius: el.styles?.borderRadius,
-    };
-
-    if (el.type === 'title') {
-      return (
-        <h2 key={el.id} style={style}>
-          {el.content?.text}
-        </h2>
-      );
-    }
-
-    if (el.type === 'text') {
-      return (
-        <p key={el.id} style={style}>
-          {el.content?.text}
-        </p>
-      );
-    }
-
-    if (el.type === 'list') {
-      return (
-        <ul key={el.id} style={style}>
-          {el.content.items.map((item) => (
-            <li key={`${el.id}-${item}`}>{item}</li>
-          ))}
-        </ul>
-      );
-    }
-
-    if (el.type === 'image') {
-      return (
-        <img
-          key={el.id}
-          src={el.content?.url || el.content?.image}
-          alt=""
-          style={style}
-        />
-      );
-    }
-
-    return null;
+  const toolbarButtons = {
+    title: [
+      { Icon: Bold, label: 'Negrita' },
+      { Icon: Italic, label: 'Cursiva' },
+      { Icon: Underline, label: 'Subrayado' },
+      { Icon: CaseSensitive, label: 'Mayús' },
+    ],
+    text: [
+      { Icon: Bold, label: 'Negrita' },
+      { Icon: Italic, label: 'Cursiva' },
+      { Icon: Underline, label: 'Subrayado' },
+      { Icon: CaseSensitive, label: 'Mayús' },
+    ],
+    list: [
+      { Icon: List, label: 'Lista' },
+      { Icon: ListOrdered, label: 'Ordenada' },
+      { Icon: ListChecks, label: 'Viñetas' },
+      { Icon: CaseSensitive, label: 'Mayús' },
+    ],
   };
 
+  const handleElementClick = (element) => {
+    if (['title', 'text', 'list'].includes(element.type)) {
+      setSelectedElement(element);
+      setActiveToolbarButtons([]);
+      setFontSizeValue(element.styles?.fontSize ?? 16);
+    }
+  };
+
+  const handleToolbarToggle = (buttonLabel) => {
+    setActiveToolbarButtons((current) =>
+      current.includes(buttonLabel)
+        ? current.filter((item) => item !== buttonLabel)
+        : [...current, buttonLabel],
+    );
+  };
+
+  const handleCanvasClick = () => {
+    setSelectedElement(null);
+    setActiveToolbarButtons([]);
+  };
+
+  const handleFontSizeChange = (delta) => {
+    setFontSizeValue((current) => Math.max(8, Math.min(64, current + delta)));
+  };
+
+  const handleColorChange = (_color) => {};
+
   useEffect(() => {
-    const loadPresentation = async () => {
-      if (String(presentationFromStoreId) === String(id)) {
-        setPresentation(presentationFromStoreRef.current);
-        setSelectedSlideIndex(0);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const data = await getPresentation(id);
-        setPresentation(data);
-        setPresentationInStore(data);
-        setSelectedSlideIndex(0);
-      } catch {
-        toast.error('Error cargando la presentación');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPresentation();
-  }, [id, presentationFromStoreId, setPresentationInStore]);
+    if (presentation) {
+      setSelectedSlideIndex(0);
+    }
+  }, [presentation]);
 
   if (loading || !presentation) {
     return (
@@ -153,43 +140,35 @@ export default function EditPresentation() {
         <span className="slide-count">{presentation.slides.length} slides</span>
       </div>
 
+      <EditToolbar
+        selectedElement={selectedElement}
+        toolbarButtons={toolbarButtons}
+        activeToolbarButtons={activeToolbarButtons}
+        onToggleButton={handleToolbarToggle}
+        fontSizeValue={fontSizeValue}
+        onFontSizeChange={handleFontSizeChange}
+        onColorChange={handleColorChange}
+      />
+
       <div className="edit-layout">
-        <aside className="edit-sidebar">
-          <div className="edit-sidebar-header">Diapositivas</div>
-          <div className="slide-list">
-            {presentation.slides.map((slide, index) => (
-              <button
-                key={slide.id}
-                type="button"
-                className={`slide-list-item ${
-                  selectedSlideIndex === index ? 'active' : ''
-                }`}
-                onClick={() => setSelectedSlideIndex(index)}
-              >
-                <span className="slide-item-number">{index + 1}</span>
-                <strong>{slide.title || 'Sin título'}</strong>
-                <p>{slide.elements?.[0]?.content?.text || 'Sin contenido'}</p>
-              </button>
-            ))}
-          </div>
-        </aside>
+        <SlideSidebar
+          slides={presentation.slides}
+          selectedSlideIndex={selectedSlideIndex}
+          onSelectSlide={setSelectedSlideIndex}
+        />
 
         <main className="edit-main-preview">
-          <div
-            className="slide-canvas"
-            style={{
-              backgroundImage: `url(${getTemplate(
-                selectedSlide,
-                selectedSlideIndex,
-                presentation.slides.length,
-              )})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-            }}
-          >
-            {selectedSlide.elements?.map((el) => renderElement(el))}
-          </div>
+          <SlideCanvas
+            selectedSlide={selectedSlide}
+            backgroundImageUrl={getTemplate(
+              selectedSlide,
+              selectedSlideIndex,
+              presentation.slides.length,
+            )}
+            onElementClick={handleElementClick}
+            selectedElement={selectedElement}
+            onCanvasClick={handleCanvasClick}
+          />
         </main>
       </div>
     </div>

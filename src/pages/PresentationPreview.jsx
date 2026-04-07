@@ -1,9 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/preview.css';
-import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
-import { getPresentation } from '../services/presentationService';
+import { usePresentationLoader } from '../hooks/usePresentationLoader';
 import { usePresentationStore } from '../store/presentationStore';
 
 export default function PresentationPreview() {
@@ -12,40 +10,17 @@ export default function PresentationPreview() {
   const presentationFromStore = usePresentationStore(
     (state) => state.presentation,
   );
-  const presentationFromStoreId = presentationFromStore?.id;
-  const presentationFromStoreRef = useRef(presentationFromStore);
-  presentationFromStoreRef.current = presentationFromStore;
   const setPresentationInStore = usePresentationStore(
     (state) => state.setPresentation,
   );
-  const [presentation, setPresentation] = useState(
-    presentationFromStore ?? null,
+  const { presentation, loading } = usePresentationLoader(
+    id,
+    presentationFromStore,
+    setPresentationInStore,
   );
-  const [loading, setLoading] = useState(false);
 
   const TEMPLATE_BASE =
     'https://qftsvgnhxcqdrcarvsiq.supabase.co/storage/v1/object/public/images/slides/';
-
-  useEffect(() => {
-    const loadPresentation = async () => {
-      if (String(presentationFromStoreId) === String(id)) {
-        setPresentation(presentationFromStoreRef.current);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const data = await getPresentation(id);
-        setPresentation(data);
-        setPresentationInStore(data);
-      } catch {
-        toast.error('error cargando presentación');
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadPresentation();
-  }, [id, presentationFromStoreId, setPresentationInStore]);
 
   if (loading) {
     return (
@@ -123,9 +98,8 @@ export default function PresentationPreview() {
     if (el.type === 'list') {
       return (
         <ul key={el.id} style={style}>
-          {el.content.items.map((item, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: <>
-            <li key={i}>{item}</li>
+          {el.content.items.map((item) => (
+            <li key={`${el.id}-${item}`}>{item}</li>
           ))}
         </ul>
       );
