@@ -1,6 +1,6 @@
 export default function SlideCanvas({
   selectedSlide,
-  backgroundImageUrl,
+  getTemplate,
   onElementClick,
   selectedElement,
   onCanvasClick,
@@ -19,7 +19,7 @@ export default function SlideCanvas({
       textAlign: el.styles?.textAlign,
       lineHeight: el.styles?.lineHeight,
       borderRadius: el.styles?.borderRadius,
-      border: isSelected ? '2px dashed #1a4d1a' : 'none',
+      outline: isSelected ? '2px dashed #1a4d1a' : 'none',
       boxSizing: 'border-box',
     };
 
@@ -86,7 +86,7 @@ export default function SlideCanvas({
     <div
       className="slide-canvas"
       style={{
-        backgroundImage: `url(${backgroundImageUrl})`,
+        ...getTemplate,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',

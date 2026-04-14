@@ -36,26 +36,13 @@ export default function EditPresentation() {
   const [activeToolbarButtons, setActiveToolbarButtons] = useState([]);
   const [fontSizeValue, setFontSizeValue] = useState(16);
 
-  const TEMPLATE_BASE =
-    'https://qftsvgnhxcqdrcarvsiq.supabase.co/storage/v1/object/public/images/slides/';
-
-  const getTemplate = (slide, index, totalSlides) => {
-    if (index === 0) {
-      return TEMPLATE_BASE.concat('title_slide.jpg');
-    }
-
-    if (index === totalSlides - 1) {
-      return TEMPLATE_BASE.concat('end_slide.jpg');
-    }
-
-    const hasImage =
-      slide?.elements?.some((el) => el.type === 'image') ?? false;
-
-    if (hasImage) {
-      return TEMPLATE_BASE.concat('slide2.jpg');
-    }
-
-    return TEMPLATE_BASE.concat('slide1.jpg');
+  const getTemplate = (slide) => {
+    const background = slide.background;
+    if (background.type === 'color')
+      return { backgroundColor: background.color };
+    if (background.type === 'image')
+      return { backgroundImage: `url("${background.url}")` };
+    return {};
   };
 
   const toolbarButtons = {
@@ -160,11 +147,7 @@ export default function EditPresentation() {
         <main className="edit-main-preview">
           <SlideCanvas
             selectedSlide={selectedSlide}
-            backgroundImageUrl={getTemplate(
-              selectedSlide,
-              selectedSlideIndex,
-              presentation.slides.length,
-            )}
+            getTemplate={getTemplate(selectedSlide)}
             onElementClick={handleElementClick}
             selectedElement={selectedElement}
             onCanvasClick={handleCanvasClick}

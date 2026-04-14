@@ -19,9 +19,6 @@ export default function PresentationPreview() {
     setPresentationInStore,
   );
 
-  const TEMPLATE_BASE =
-    'https://qftsvgnhxcqdrcarvsiq.supabase.co/storage/v1/object/public/images/slides/';
-
   if (loading) {
     return (
       <div className="preview-error">
@@ -43,25 +40,13 @@ export default function PresentationPreview() {
     navigate(`/edit/${id}`);
   };
 
-  const getTemplate = (slide, index, totalSlides) => {
-    // Primera slide
-    if (index === 0) {
-      return TEMPLATE_BASE.concat('title_slide.jpg');
-    }
-
-    // Última slide
-    if (index === totalSlides - 1) {
-      return TEMPLATE_BASE.concat('end_slide.jpg');
-    }
-
-    const hasImage =
-      slide?.elements?.some((el) => el.type === 'image') ?? false;
-
-    if (hasImage) {
-      return TEMPLATE_BASE.concat('slide2.jpg');
-    }
-
-    return TEMPLATE_BASE.concat('slide1.jpg');
+  const getTemplate = (slide) => {
+    const background = slide.background;
+    if (background.type === 'color')
+      return { backgroundColor: background.color };
+    if (background.type === 'image')
+      return { backgroundImage: `url("${background.url}")` };
+    return {};
   };
 
   const renderElement = (el) => {
@@ -148,11 +133,7 @@ export default function PresentationPreview() {
             <div
               className="slide-canvas"
               style={{
-                backgroundImage: `url(${getTemplate(
-                  slide,
-                  index,
-                  presentation.slides.length,
-                )})`,
+                ...getTemplate(slide),
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
