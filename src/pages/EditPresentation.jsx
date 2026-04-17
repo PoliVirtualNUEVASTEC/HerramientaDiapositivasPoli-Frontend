@@ -5,16 +5,20 @@ import '../styles/preview.css';
 import {
   Bold,
   CaseSensitive,
+  CheckCircle,
   Italic,
   List,
   ListChecks,
   ListOrdered,
+  Loader,
   Underline,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import EditToolbar from '../components/EditToolbar';
 import SlideCanvas from '../components/SlideCanvas';
 import SlideSidebar from '../components/SlideSidebar';
 import { usePresentationLoader } from '../hooks/usePresentationLoader';
+import { updateElement } from '../services/slideElementService';
 import { usePresentationStore } from '../store/presentationStore';
 
 export default function EditPresentation() {
@@ -33,9 +37,23 @@ export default function EditPresentation() {
   );
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
   const [selectedElement, setSelectedElement] = useState(null);
+  const [elementSnapshotsById, setElementSnapshotsById] = useState({});
+  const selectedElementSnapshot = selectedElement?.id
+    ? elementSnapshotsById[selectedElement.id]
+    : null;
   const [activeToolbarButtons, setActiveToolbarButtons] = useState([]);
   const [fontSizeValue, setFontSizeValue] = useState(16);
   const [isEditingText, setIsEditingText] = useState(false);
+  const [syncStatus, setSyncStatus] = useState('idle'); // 'idle', 'saving', 'saved', 'error'
+
+  const imageBorderRadiusSteps = [0, 5, 10, 20, 50];
+
+  const getBorderRadiusValue = () => {
+    const radius = selectedElement?.styles?.borderRadius;
+    if (!radius) return 0;
+    const parsed = parseInt(radius.toString().replace('%', ''), 10);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
 
   const updateSelectedElement = useCallback(
     (updates) => {
@@ -84,25 +102,48 @@ export default function EditPresentation() {
       { Icon: ListChecks, label: 'Viñetas' },
       { Icon: CaseSensitive, label: 'Mayús' },
     ],
+    image: [],
   };
 
-  const handleElementClick = (element) => {
-    if (['title', 'text', 'list'].includes(element.type)) {
+  const isElementDirty = (element, snapshot) => {
+    if (!element || !snapshot) return false;
+    return JSON.stringify(element) !== JSON.stringify(snapshot);
+  };
+
+  const createSnapshot = (element) =>
+    element ? JSON.parse(JSON.stringify(element)) : null;
+
+  const handleElementClick = async (element) => {
+    if (['title', 'text', 'list', 'image'].includes(element.type)) {
       if (selectedElement?.id === element.id) {
-        setIsEditingText(true);
-      } else {
-        setSelectedElement(element);
-        // Inicializar activeToolbarButtons basado en estilos
-        const active = [];
-        if (element.styles?.fontWeight === 'bold') active.push('Negrita');
-        if (element.styles?.fontStyle === 'italic') active.push('Cursiva');
-        if (element.styles?.textDecoration === 'underline')
-          active.push('Subrayado');
-        if (element.styles?.textTransform === 'uppercase') active.push('Mayús');
-        setActiveToolbarButtons(active);
-        setFontSizeValue(element.styles?.fontSize ?? 16);
-        setIsEditingText(false);
+        if (['title', 'text', 'list'].includes(element.type)) {
+          setIsEditingText(true);
+        }
+        return;
       }
+
+      if (
+        selectedElement &&
+        selectedElement.id !== element.id &&
+        isElementDirty(selectedElement, selectedElementSnapshot)
+      ) {
+        saveElementToDatabase(selectedElement);
+      }
+
+      setSelectedElement(element);
+      setElementSnapshotsById((current) => ({
+        ...current,
+        [element.id]: createSnapshot(element),
+      }));
+      const active = [];
+      if (element.styles?.fontWeight === 'bold') active.push('Negrita');
+      if (element.styles?.fontStyle === 'italic') active.push('Cursiva');
+      if (element.styles?.textDecoration === 'underline')
+        active.push('Subrayado');
+      if (element.styles?.textTransform === 'uppercase') active.push('Mayús');
+      setActiveToolbarButtons(active);
+      setFontSizeValue(element.styles?.fontSize ?? 16);
+      setIsEditingText(false);
     }
   };
 
@@ -114,10 +155,58 @@ export default function EditPresentation() {
     );
   };
 
-  const handleCanvasClick = () => {
-    setSelectedElement(null);
-    setActiveToolbarButtons([]);
-    setIsEditingText(false);
+  const handleAspectRatioToggle = () => {
+    if (!selectedElement) return;
+    updateSelectedElement({
+      maintainAspectRatio: !selectedElement.maintainAspectRatio,
+    });
+  };
+
+  const handleBorderRadiusCycle = () => {
+    if (!selectedElement) return;
+    const currentValue = getBorderRadiusValue();
+    const currentIndex = imageBorderRadiusSteps.indexOf(currentValue);
+    const nextIndex = (currentIndex + 1) % imageBorderRadiusSteps.length;
+    const nextValue = imageBorderRadiusSteps[nextIndex];
+
+    updateSelectedElement({
+      styles: {
+        ...selectedElement.styles,
+        borderRadius: `${nextValue}%`,
+      },
+    });
+  };
+
+  const handleElementPosition = (action) => {
+    if (!selectedElement) return;
+    const updatedPresentation = { ...presentation };
+    const slide = updatedPresentation.slides[selectedSlideIndex];
+    const elements = slide.elements;
+
+    elements.forEach((el, idx) => {
+      if (el.zIndex === undefined) {
+        el.zIndex = idx;
+      }
+    });
+
+    const currentElement = elements.find((el) => el.id === selectedElement.id);
+    if (!currentElement) return;
+
+    let newZIndex = currentElement.zIndex;
+    const maxZIndex = Math.max(...elements.map((el) => el.zIndex || 0));
+    const minZIndex = Math.min(...elements.map((el) => el.zIndex || 0));
+
+    if (action === 'front') {
+      newZIndex = maxZIndex + 1;
+    } else if (action === 'back') {
+      newZIndex = minZIndex - 1;
+    } else if (action === 'forward') {
+      newZIndex = currentElement.zIndex + 1;
+    } else if (action === 'backward') {
+      newZIndex = currentElement.zIndex - 1;
+    }
+
+    updateSelectedElement({ zIndex: newZIndex });
   };
 
   const handleFontSizeChange = (delta) => {
@@ -144,6 +233,63 @@ export default function EditPresentation() {
     }
   };
 
+  const handleCanvasClick = async () => {
+    if (
+      selectedElement &&
+      isElementDirty(selectedElement, selectedElementSnapshot)
+    ) {
+      await saveElementToDatabase(selectedElement);
+    }
+    setSelectedElement(null);
+    setActiveToolbarButtons([]);
+    setIsEditingText(false);
+  };
+
+  const saveElementToDatabase = useCallback(async (element) => {
+    if (!element || !element.id) return false;
+    const elementSnapshot = JSON.parse(JSON.stringify(element));
+    try {
+      setSyncStatus('saving');
+      await updateElement(
+        element.id,
+        element.type,
+        element.content,
+        element.positionX,
+        element.positionY,
+        element.width,
+        element.height,
+        element.styles,
+        element.zIndex,
+      );
+      setSyncStatus('saved');
+      setElementSnapshotsById((current) => ({
+        ...current,
+        [element.id]: elementSnapshot,
+      }));
+      setTimeout(() => setSyncStatus('idle'), 2000);
+      return true;
+    } catch (error) {
+      console.error('Error saving element:', error);
+      setSyncStatus('error');
+      setTimeout(() => setSyncStatus('idle'), 3000);
+      return false;
+    }
+  }, []);
+
+  const handleBackClick = async () => {
+    if (
+      selectedElement &&
+      isElementDirty(selectedElement, selectedElementSnapshot)
+    ) {
+      const saved = await saveElementToDatabase(selectedElement);
+      if (!saved) return;
+      toast.success('Presentación guardada.', {
+        style: { backgroundColor: 'green', color: 'white' },
+      });
+    }
+    navigate(-1);
+  };
+
   useEffect(() => {
     if (selectedElement) {
       const updatedStyles = {
@@ -164,15 +310,13 @@ export default function EditPresentation() {
 
       const currentStyles = selectedElement.styles || {};
       if (
-        currentStyles.fontWeight === updatedStyles.fontWeight &&
-        currentStyles.fontStyle === updatedStyles.fontStyle &&
-        currentStyles.textDecoration === updatedStyles.textDecoration &&
-        currentStyles.textTransform === updatedStyles.textTransform
+        currentStyles.fontWeight !== updatedStyles.fontWeight ||
+        currentStyles.fontStyle !== updatedStyles.fontStyle ||
+        currentStyles.textDecoration !== updatedStyles.textDecoration ||
+        currentStyles.textTransform !== updatedStyles.textTransform
       ) {
-        return;
+        updateSelectedElement({ styles: updatedStyles });
       }
-
-      updateSelectedElement({ styles: updatedStyles });
     }
   }, [activeToolbarButtons, selectedElement, updateSelectedElement]);
 
@@ -181,6 +325,23 @@ export default function EditPresentation() {
       setSelectedSlideIndex(0);
     }
   }, [presentation]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <>
+  useEffect(() => {
+    const saveOnSlideChange = async () => {
+      if (
+        selectedElement &&
+        isElementDirty(selectedElement, selectedElementSnapshot)
+      ) {
+        await saveElementToDatabase(selectedElement);
+      }
+      setSelectedElement(null);
+      setActiveToolbarButtons([]);
+      setIsEditingText(false);
+    };
+
+    saveOnSlideChange();
+  }, [selectedSlideIndex]);
 
   if (loading || !presentation) {
     return (
@@ -201,11 +362,30 @@ export default function EditPresentation() {
       <Navbar />
 
       <div className="preview-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>
+        <button className="back-btn" onClick={handleBackClick}>
           ← Volver
         </button>
 
-        <h1>Editar: {presentation.title}</h1>
+        <div className="header-title-group">
+          <h1>Editar: {presentation.title}</h1>
+          {syncStatus === 'saving' && (
+            <div className="sync-status saving">
+              <Loader size={16} className="spin" />
+              <span>Guardando...</span>
+            </div>
+          )}
+          {syncStatus === 'saved' && (
+            <div className="sync-status saved">
+              <CheckCircle size={16} />
+              <span>Guardado</span>
+            </div>
+          )}
+          {syncStatus === 'error' && (
+            <div className="sync-status error">
+              <span>Error al guardar</span>
+            </div>
+          )}
+        </div>
 
         <span className="slide-count">{presentation.slides.length} slides</span>
       </div>
@@ -218,6 +398,11 @@ export default function EditPresentation() {
         fontSizeValue={fontSizeValue}
         onFontSizeChange={handleFontSizeChange}
         onColorChange={handleColorChange}
+        maintainAspectRatio={selectedElement?.maintainAspectRatio}
+        onAspectRatioToggle={handleAspectRatioToggle}
+        borderRadiusValue={getBorderRadiusValue()}
+        onBorderRadiusCycle={handleBorderRadiusCycle}
+        onPositionAction={handleElementPosition}
       />
 
       <div className="edit-layout">
