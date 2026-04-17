@@ -14,13 +14,19 @@ export default function EditToolbar({
   const [selectedColor, setSelectedColor] = useState('#000000');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const colorPickerRef = useRef(null);
+  const previousSelectedElementId = useRef(null);
 
   useEffect(() => {
     const elementColor = selectedElement?.styles?.color || '#000000';
-    setSelectedColor(elementColor);
-    // Cerrar el color picker cuando cambia el elemento seleccionado
-    setShowColorPicker(false);
-  }, [selectedElement]);
+    if (elementColor !== selectedColor) {
+      setSelectedColor(elementColor);
+    }
+
+    if (selectedElement?.id !== previousSelectedElementId.current) {
+      setShowColorPicker(false);
+      previousSelectedElementId.current = selectedElement?.id;
+    }
+  }, [selectedElement, selectedColor]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

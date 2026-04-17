@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import '../styles/preview.css';
@@ -35,6 +35,26 @@ export default function EditPresentation() {
   const [selectedElement, setSelectedElement] = useState(null);
   const [activeToolbarButtons, setActiveToolbarButtons] = useState([]);
   const [fontSizeValue, setFontSizeValue] = useState(16);
+  const [isEditingText, setIsEditingText] = useState(false);
+
+  const updateSelectedElement = useCallback(
+    (updates) => {
+      if (!selectedElement) return;
+      const updatedElement = { ...selectedElement, ...updates };
+      setSelectedElement(updatedElement);
+      // Actualizar en presentation
+      const updatedPresentation = { ...presentation };
+      const slide = updatedPresentation.slides[selectedSlideIndex];
+      const elementIndex = slide.elements.findIndex(
+        (el) => el.id === selectedElement.id,
+      );
+      if (elementIndex !== -1) {
+        slide.elements[elementIndex] = updatedElement;
+        setPresentationInStore(updatedPresentation);
+      }
+    },
+    [selectedElement, presentation, selectedSlideIndex, setPresentationInStore],
+  );
 
   const getTemplate = (slide) => {
     const background = slide.background;
@@ -68,9 +88,21 @@ export default function EditPresentation() {
 
   const handleElementClick = (element) => {
     if (['title', 'text', 'list'].includes(element.type)) {
-      setSelectedElement(element);
-      setActiveToolbarButtons([]);
-      setFontSizeValue(element.styles?.fontSize ?? 16);
+      if (selectedElement?.id === element.id) {
+        setIsEditingText(true);
+      } else {
+        setSelectedElement(element);
+        // Inicializar activeToolbarButtons basado en estilos
+        const active = [];
+        if (element.styles?.fontWeight === 'bold') active.push('Negrita');
+        if (element.styles?.fontStyle === 'italic') active.push('Cursiva');
+        if (element.styles?.textDecoration === 'underline')
+          active.push('Subrayado');
+        if (element.styles?.textTransform === 'uppercase') active.push('Mayús');
+        setActiveToolbarButtons(active);
+        setFontSizeValue(element.styles?.fontSize ?? 16);
+        setIsEditingText(false);
+      }
     }
   };
 
@@ -85,13 +117,64 @@ export default function EditPresentation() {
   const handleCanvasClick = () => {
     setSelectedElement(null);
     setActiveToolbarButtons([]);
+    setIsEditingText(false);
   };
 
   const handleFontSizeChange = (delta) => {
-    setFontSizeValue((current) => Math.max(8, Math.min(64, current + delta)));
+    const newSize = Math.max(8, Math.min(64, fontSizeValue + delta));
+    setFontSizeValue(newSize);
+    if (selectedElement) {
+      updateSelectedElement({
+        styles: { ...selectedElement.styles, fontSize: newSize },
+      });
+    }
   };
 
-  const handleColorChange = (_color) => {};
+  const handleElementChange = (elementId, updates) => {
+    if (selectedElement?.id === elementId) {
+      updateSelectedElement(updates);
+    }
+  };
+
+  const handleColorChange = (color) => {
+    if (selectedElement) {
+      updateSelectedElement({
+        styles: { ...selectedElement.styles, color },
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (selectedElement) {
+      const updatedStyles = {
+        ...selectedElement.styles,
+        fontWeight: activeToolbarButtons.includes('Negrita')
+          ? 'bold'
+          : 'normal',
+        fontStyle: activeToolbarButtons.includes('Cursiva')
+          ? 'italic'
+          : 'normal',
+        textDecoration: activeToolbarButtons.includes('Subrayado')
+          ? 'underline'
+          : 'none',
+        textTransform: activeToolbarButtons.includes('Mayús')
+          ? 'uppercase'
+          : 'none',
+      };
+
+      const currentStyles = selectedElement.styles || {};
+      if (
+        currentStyles.fontWeight === updatedStyles.fontWeight &&
+        currentStyles.fontStyle === updatedStyles.fontStyle &&
+        currentStyles.textDecoration === updatedStyles.textDecoration &&
+        currentStyles.textTransform === updatedStyles.textTransform
+      ) {
+        return;
+      }
+
+      updateSelectedElement({ styles: updatedStyles });
+    }
+  }, [activeToolbarButtons, selectedElement, updateSelectedElement]);
 
   useEffect(() => {
     if (presentation) {
@@ -151,6 +234,9 @@ export default function EditPresentation() {
             onElementClick={handleElementClick}
             selectedElement={selectedElement}
             onCanvasClick={handleCanvasClick}
+            isEditingText={isEditingText}
+            onElementChange={handleElementChange}
+            onEditBlur={() => setIsEditingText(false)}
           />
         </main>
       </div>
