@@ -43,21 +43,37 @@ export default function PresentationPreview() {
     navigate(`/edit/${id}`);
   };
 
-  const getTemplate = (slide, index, totalSlides) => {
-    // Primera slide
-    if (index === 0) {
-      return TEMPLATE_BASE.concat('title_slide.jpg');
+  const getTemplateType = (slide, index, totalSlides) => {
+    if (slide?.templateType) {
+      return slide.templateType;
     }
 
-    // Última slide
+    if (index === 0) {
+      return 'title';
+    }
+
     if (index === totalSlides - 1) {
-      return TEMPLATE_BASE.concat('end_slide.jpg');
+      return 'end';
     }
 
     const hasImage =
       slide?.elements?.some((el) => el.type === 'image') ?? false;
 
-    if (hasImage) {
+    return hasImage ? 'image' : 'standard';
+  };
+
+  const getTemplate = (slide, index, totalSlides) => {
+    const templateType = getTemplateType(slide, index, totalSlides);
+
+    if (templateType === 'title') {
+      return TEMPLATE_BASE.concat('title_slide.jpg');
+    }
+
+    if (templateType === 'end') {
+      return TEMPLATE_BASE.concat('end_slide.jpg');
+    }
+
+    if (templateType === 'image') {
       return TEMPLATE_BASE.concat('slide2.jpg');
     }
 
