@@ -11,19 +11,22 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Evitar loop infinito en refresh
     if (originalRequest.url?.includes('/auth/refresh')) {
       return Promise.reject(error);
     }
 
+    // Si es 401 y no se ha reintentado, intentar refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        await api.post('/api/auth/refresh');
-
+        const refreshResponse = await api.post('/api/auth/refresh');
+        // Si el refresh funciona, reintentar la petición original
         return api(originalRequest);
-      } catch (err) {
-        return Promise.reject(err);
+      } catch (refreshError) {
+        // Si el refresh falla, rechazar
+        return Promise.reject(refreshError);
       }
     }
 

@@ -400,7 +400,11 @@ export default function SlideCanvas({
       }}
       onClick={onCanvasClick}
     >
-      {[...selectedSlide.elements]
+      {[
+        ...(Array.isArray(selectedSlide?.elements)
+          ? selectedSlide.elements
+          : []),
+      ]
         .sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0))
         .map((el) => renderElement(el))}
     </div>

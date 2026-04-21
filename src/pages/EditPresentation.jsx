@@ -21,6 +21,36 @@ import { usePresentationLoader } from '../hooks/usePresentationLoader';
 import { updateElement } from '../services/slideElementService';
 import { usePresentationStore } from '../store/presentationStore';
 
+const getTemplateType = (slide, index, totalSlides) => {
+  // 1. PRIORIDAD MÁXIMA: Si el slide ya tiene un background definido (clonado o guardado)
+  // No importa la posición, debe mantener su tipo para que el CSS/Imagen coincida.
+  if (slide?.templateType) {
+    return slide.templateType;
+  }
+
+  // 2. Si es una slide nueva (sin background previo), usamos la lógica de posición
+  if (index === 0) return 'title';
+  if (index === totalSlides - 1) return 'end';
+
+  const currentElements = slide?.elements || slide?.SlideElements || [];
+  const hasImage = currentElements.some((el) => el.type === 'image');
+
+  return hasImage ? 'image' : 'standard';
+};
+
+const normalizeSlideTemplate = (slide, index, totalSlides) => ({
+  ...slide,
+  templateType: getTemplateType(slide, index, totalSlides),
+});
+
+const normalizePresentationTemplates = (presentationState) => ({
+  ...presentationState,
+  slides:
+    presentationState.slides?.map((slide, index) =>
+      normalizeSlideTemplate(slide, index, presentationState.slides.length),
+    ) ?? [],
+});
+
 export default function EditPresentation() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -34,6 +64,9 @@ export default function EditPresentation() {
     id,
     presentationFromStore,
     setPresentationInStore,
+  );
+  const [presentationData, setPresentationData] = useState(
+    presentation ?? null,
   );
   const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
   const [selectedElement, setSelectedElement] = useState(null);
@@ -322,6 +355,9 @@ export default function EditPresentation() {
 
   useEffect(() => {
     if (presentation) {
+      const normalizedPresentation =
+        normalizePresentationTemplates(presentation);
+      setPresentationData(normalizedPresentation);
       setSelectedSlideIndex(0);
     }
   }, [presentation]);
@@ -355,7 +391,8 @@ export default function EditPresentation() {
   }
 
   const selectedSlide =
-    presentation.slides[selectedSlideIndex] || presentation.slides[0];
+    presentationData?.slides?.[selectedSlideIndex] ||
+    presentationData?.slides?.[0];
 
   return (
     <div className="preview-container">
@@ -406,24 +443,33 @@ export default function EditPresentation() {
       />
 
       <div className="edit-layout">
-        <SlideSidebar
-          slides={presentation.slides}
-          selectedSlideIndex={selectedSlideIndex}
-          onSelectSlide={setSelectedSlideIndex}
-        />
+        {presentationData && (
+          <>
+            <SlideSidebar
+              slides={presentationData.slides}
+              selectedSlideIndex={selectedSlideIndex}
+              onSelectSlide={setSelectedSlideIndex}
+              presentationData={presentationData}
+              setPresentationData={setPresentationData}
+              setPresentationInStore={setPresentationInStore}
+              setSelectedSlideIndex={setSelectedSlideIndex}
+              normalizePresentationTemplates={normalizePresentationTemplates}
+            />
 
-        <main className="edit-main-preview">
-          <SlideCanvas
-            selectedSlide={selectedSlide}
-            getTemplate={getTemplate(selectedSlide)}
-            onElementClick={handleElementClick}
-            selectedElement={selectedElement}
-            onCanvasClick={handleCanvasClick}
-            isEditingText={isEditingText}
-            onElementChange={handleElementChange}
-            onEditBlur={() => setIsEditingText(false)}
-          />
-        </main>
+            <main className="edit-main-preview">
+              <SlideCanvas
+                selectedSlide={selectedSlide}
+                getTemplate={getTemplate(selectedSlide)}
+                onElementClick={handleElementClick}
+                selectedElement={selectedElement}
+                onCanvasClick={handleCanvasClick}
+                isEditingText={isEditingText}
+                onElementChange={handleElementChange}
+                onEditBlur={() => setIsEditingText(false)}
+              />
+            </main>
+          </>
+        )}
       </div>
     </div>
   );
