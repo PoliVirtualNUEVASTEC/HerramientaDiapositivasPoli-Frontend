@@ -267,7 +267,8 @@
 }
 
 .edit-btn,
-.export-btn {
+.export-btn,
+.present-btn {
   border: 1px solid #1a4d1a;
   background: #1a4d1a;
   padding: 10px 18px;
@@ -280,7 +281,8 @@
 }
 
 .edit-btn:hover,
-.export-btn:hover:not(:disabled) {
+.export-btn:hover:not(:disabled),
+.present-btn:hover {
   background: #163d14;
 }
 
@@ -294,6 +296,12 @@
 }
 
 .export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.present-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -561,6 +569,112 @@
   min-height: 100vh;
   gap: 16px;
   color: #374151;
+}
+
+.presentation-player-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #0f172a;
+  overflow: hidden;
+}
+
+.presentation-nav-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.presentation-nav-zone.left {
+  left: 0;
+}
+
+.presentation-nav-zone.right {
+  right: 0;
+}
+
+.presentation-player-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.88) 0%,
+    rgba(15, 23, 42, 0.3) 100%
+  );
+  color: white;
+}
+
+.presentation-player-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.presentation-player-meta strong {
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.presentation-player-meta span {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.presentation-player-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.presentation-player-close:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.presentation-player-stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
+  padding: 70px 32px 32px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.presentation-player-slide {
+  width: 960px;
+  height: 540px;
+  transform-origin: center center;
+  pointer-events: none;
+}
+
+.presentation-player-slide .slide-canvas {
+  width: 960px;
+  height: 540px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
 }
 
 /* ───────────────────────── */

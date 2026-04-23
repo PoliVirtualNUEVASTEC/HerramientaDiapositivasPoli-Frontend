@@ -1,8 +1,10 @@
-import { ChevronDown, FileDown } from 'lucide-react';
+import { ChevronDown, FileDown, Play } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import PresentationPlayer from '../components/PresentationPlayer';
 import PresentationSlideCanvas from '../components/PresentationSlideCanvas';
 import { usePresentationExport } from '../hooks/usePresentationExport';
+import { usePresentationPlayer } from '../hooks/usePresentationPlayer';
 import { usePresentationLoader } from '../hooks/usePresentationLoader';
 import { usePresentationStore } from '../store/presentationStore';
 import '../styles/preview.css';
@@ -28,6 +30,14 @@ export default function PresentationPreview() {
     isExporting,
     registerSlideNode,
   } = usePresentationExport(presentation);
+  const {
+    closePresentation,
+    currentSlideIndex,
+    goToNextSlide,
+    goToPreviousSlide,
+    isPresenting,
+    openPresentation,
+  } = usePresentationPlayer(presentation?.slides?.length ?? 0);
 
   if (loading) {
     return (
@@ -65,6 +75,15 @@ export default function PresentationPreview() {
       </div>
 
       <div className="preview-actions">
+        <button
+          type="button"
+          className="present-btn"
+          onClick={() => openPresentation(0)}
+        >
+          <Play size={16} />
+          <span>Presentar</span>
+        </button>
+
         <button className="edit-btn" onClick={handleEdit}>
           Editar presentación
         </button>
@@ -115,6 +134,17 @@ export default function PresentationPreview() {
           </div>
         ))}
       </div>
+
+      {isPresenting && (
+        <PresentationPlayer
+          currentSlideIndex={currentSlideIndex}
+          onClose={closePresentation}
+          onNextSlide={goToNextSlide}
+          onPreviousSlide={goToPreviousSlide}
+          presentationTitle={presentation.title}
+          slides={presentation.slides}
+        />
+      )}
     </div>
   );
 }
