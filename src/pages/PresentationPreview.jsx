@@ -1,8 +1,11 @@
+import { ChevronDown, FileDown } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import '../styles/preview.css';
+import PresentationSlideCanvas from '../components/PresentationSlideCanvas';
+import { usePresentationExport } from '../hooks/usePresentationExport';
 import { usePresentationLoader } from '../hooks/usePresentationLoader';
 import { usePresentationStore } from '../store/presentationStore';
+import '../styles/preview.css';
 
 export default function PresentationPreview() {
   const navigate = useNavigate();
@@ -18,6 +21,13 @@ export default function PresentationPreview() {
     presentationFromStore,
     setPresentationInStore,
   );
+  const {
+    exportToPdf,
+    exportToPptx,
+    exportingFormat,
+    isExporting,
+    registerSlideNode,
+  } = usePresentationExport(presentation);
 
   if (loading) {
     return (
@@ -40,70 +50,6 @@ export default function PresentationPreview() {
     navigate(`/edit/${id}`);
   };
 
-  const getTemplate = (slide) => {
-    const background = slide.background;
-    if (background.type === 'color')
-      return { backgroundColor: background.color };
-    if (background.type === 'image')
-      return { backgroundImage: `url("${background.url}")` };
-    return {};
-  };
-
-  const renderElement = (el) => {
-    const style = {
-      position: 'absolute',
-      left: el.positionX,
-      top: el.positionY,
-      width: el.width,
-      height: el.height,
-      fontSize: el.styles?.fontSize,
-      fontWeight: el.styles?.fontWeight,
-      color: el.styles?.color,
-      textAlign: el.styles?.textAlign,
-      lineHeight: el.styles?.lineHeight,
-      borderRadius: el.styles?.borderRadius,
-    };
-
-    if (el.type === 'title') {
-      return (
-        <h2 key={el.id} style={style}>
-          {el.content?.text}
-        </h2>
-      );
-    }
-
-    if (el.type === 'text') {
-      return (
-        <p key={el.id} style={style}>
-          {el.content?.text}
-        </p>
-      );
-    }
-
-    if (el.type === 'list') {
-      return (
-        <ul key={el.id} style={style}>
-          {el.content.items.map((item) => (
-            <li key={`${el.id}-${item}`}>{item}</li>
-          ))}
-        </ul>
-      );
-    }
-
-    if (el.type === 'image') {
-      return (
-        <img
-          key={el.id}
-          src={el.content?.url || el.content?.image}
-          alt=""
-          style={style}
-        />
-      );
-    }
-
-    return null;
-  };
-
   return (
     <div className="preview-container">
       <Navbar />
@@ -117,10 +63,42 @@ export default function PresentationPreview() {
 
         <span className="slide-count">{presentation.slides.length} slides</span>
       </div>
+
       <div className="preview-actions">
         <button className="edit-btn" onClick={handleEdit}>
           Editar presentación
         </button>
+
+        <div className="export-menu">
+          <button type="button" className="export-btn" disabled={isExporting}>
+            <FileDown size={16} />
+            <span>
+              {exportingFormat
+                ? `Exportando ${exportingFormat.toUpperCase()}...`
+                : 'Exportar'}
+            </span>
+            <ChevronDown size={16} />
+          </button>
+
+          {!isExporting && (
+            <div className="export-dropdown">
+              <button
+                type="button"
+                className="export-dropdown-item"
+                onClick={exportToPdf}
+              >
+                PDF
+              </button>
+              <button
+                type="button"
+                className="export-dropdown-item"
+                onClick={exportToPptx}
+              >
+                PPTX
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="slides-wrapper">
@@ -130,19 +108,10 @@ export default function PresentationPreview() {
               Slide {index + 1} — {slide.title}
             </div>
 
-            <div
-              className="slide-canvas"
-              style={{
-                ...getTemplate(slide),
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-              }}
-            >
-              {/* no renderizar contenido en la última slide */}
-              {index !== presentation.slides.length - 1 &&
-                slide?.elements?.map((el) => renderElement(el))}
-            </div>
+            <PresentationSlideCanvas
+              ref={(node) => registerSlideNode(slide.id, node)}
+              slide={slide}
+            />
           </div>
         ))}
       </div>
