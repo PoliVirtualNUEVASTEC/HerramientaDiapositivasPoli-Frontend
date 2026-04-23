@@ -232,7 +232,12 @@ export default function SlideCanvas({
     const resizeHandles =
       isSelected && !isEditingText
         ? [
-            { position: 'top-left', left: 0, top: 0, cursor: 'nwse-resize' },
+            {
+              position: 'top-left',
+              left: 0,
+              top: 0,
+              cursor: 'nwse-resize',
+            },
             { position: 'top-right', right: 0, top: 0, cursor: 'nesw-resize' },
             {
               position: 'bottom-left',
@@ -273,9 +278,7 @@ export default function SlideCanvas({
               position: 'absolute',
               width: 10,
               height: 10,
-              background: 'white',
-              border: '1px solid #1a4d1a',
-              borderRadius: 2,
+              background: 'transparent',
               cursor: handle.cursor,
               zIndex: 10,
               ...('left' in handle ? { left: handle.left } : {}),
@@ -363,10 +366,148 @@ export default function SlideCanvas({
     }
 
     if (el.type === 'list') {
+      if (isEditingText && isSelected) {
+        const listType = el.content?.listType || 'unordered';
+        const items = el.content?.items || [];
+
+        const handleListKeyDown = (e, itemIndex) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            const newItems = [...items];
+            newItems.splice(itemIndex + 1, 0, '');
+            onElementChange(el.id, {
+              content: { ...el.content, items: newItems },
+            });
+            setTimeout(() => {
+              const inputs = document.querySelectorAll(
+                `[data-list-item-input="${el.id}"]`,
+              );
+              if (inputs[itemIndex + 1]) {
+                inputs[itemIndex + 1].focus();
+              }
+            }, 0);
+          } else if (
+            (e.key === 'Backspace' || e.key === 'Delete') &&
+            e.target.value === ''
+          ) {
+            e.preventDefault();
+            if (items.length > 1) {
+              const newItems = items.filter((_, i) => i !== itemIndex);
+              onElementChange(el.id, {
+                content: { ...el.content, items: newItems },
+              });
+            }
+          }
+        };
+
+        const handleItemChange = (index, value) => {
+          const newItems = [...items];
+          newItems[index] = value;
+          onElementChange(el.id, {
+            content: { ...el.content, items: newItems },
+          });
+        };
+
+        return renderWrapper(
+          <div
+            style={{
+              ...innerStyle,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px',
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {items.map((item, index) => (
+              <div
+                key={`${el.id}-item-${index}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span
+                  style={{
+                    flexShrink: 0,
+                    fontFamily: innerStyle.fontFamily,
+                    fontSize: innerStyle.fontSize,
+                  }}
+                >
+                  {listType === 'ordered'
+                    ? `${index + 1}.`
+                    : listType === 'checkmark'
+                      ? '☐'
+                      : '•'}
+                </span>
+                <input
+                  type="text"
+                  data-list-item-input={el.id}
+                  value={item}
+                  onChange={(e) => handleItemChange(index, e.target.value)}
+                  onKeyDown={(e) => handleListKeyDown(e, index)}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    flex: 1,
+                    border: 'none',
+                    background: 'transparent',
+                    fontFamily: innerStyle.fontFamily,
+                    fontSize: innerStyle.fontSize,
+                    fontWeight: innerStyle.fontWeight,
+                    fontStyle: innerStyle.fontStyle,
+                    textDecoration: innerStyle.textDecoration,
+                    color: innerStyle.color,
+                    outline: 'none',
+                    padding: '2px 0',
+                  }}
+                  autoFocus={index === 0}
+                />
+              </div>
+            ))}
+          </div>,
+        );
+      }
+
+      const listType = el.content?.listType || 'unordered';
+      const items = el.content?.items || [];
+
+      const getListStyle = () => {
+        if (listType === 'ordered') return { listStyleType: 'decimal' };
+        if (listType === 'checkmark') return { listStyleType: 'none' };
+        return { listStyleType: 'disc' };
+      };
+
       return renderWrapper(
-        <ul style={{ ...innerStyle, cursor: 'pointer' }} onClick={handleClick}>
-          {el.content.items.map((item) => (
-            <li key={`${el.id}-${item}`}>{item}</li>
+        <ul
+          style={{
+            ...innerStyle,
+            cursor: 'pointer',
+            ...getListStyle(),
+            paddingLeft: '20px',
+          }}
+          onClick={handleClick}
+        >
+          {items.map((item, index) => (
+            <li
+              key={`${el.id}-item-${index}`}
+              style={
+                listType === 'checkmark'
+                  ? {
+                      listStyleType: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }
+                  : {}
+              }
+            >
+              {listType === 'checkmark' && <span>☐</span>}
+              {item}
+            </li>
           ))}
         </ul>,
       );

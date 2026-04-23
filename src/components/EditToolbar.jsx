@@ -3,6 +3,9 @@ import {
   ArrowDownRight,
   ArrowUp,
   Layers,
+  List,
+  ListChecks,
+  ListOrdered,
   Minus,
   Plus,
   SquareRoundCorner,
@@ -24,6 +27,7 @@ export default function EditToolbar({
   borderRadiusValue,
   onBorderRadiusCycle,
   onPositionAction,
+  onListTypeToggle,
 }) {
   const [selectedColor, setSelectedColor] = useState('#000000');
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -157,6 +161,43 @@ export default function EditToolbar({
               <SquareRoundCorner size={18} />
               <span>Borde {borderRadiusValue}%</span>
             </button>
+          </>
+        ) : selectedElement?.type === 'list' ? (
+          <>
+            <button
+              type="button"
+              className="toolbar-button"
+              onClick={onListTypeToggle}
+              title="Cambiar tipo de lista"
+            >
+              {selectedElement.content?.listType === 'ordered' ? (
+                <ListOrdered size={18} />
+              ) : selectedElement.content?.listType === 'checkmark' ? (
+                <ListChecks size={18} />
+              ) : (
+                <List size={18} />
+              )}
+              <span>
+                {selectedElement.content?.listType === 'ordered'
+                  ? 'Ordenada'
+                  : selectedElement.content?.listType === 'checkmark'
+                    ? 'Viñetas'
+                    : 'Lista'}
+              </span>
+            </button>
+            {(selectedElement ? toolbarButtons[selectedElement.type] : []).map(
+              ({ Icon, label }) => (
+                <button
+                  key={label}
+                  type="button"
+                  className={`toolbar-button ${activeToolbarButtons.includes(label) ? 'active' : ''}`}
+                  onClick={() => onToggleButton(label)}
+                >
+                  <Icon size={18} />
+                  <span>{label}</span>
+                </button>
+              ),
+            )}
           </>
         ) : (
           (selectedElement ? toolbarButtons[selectedElement.type] : []).map(

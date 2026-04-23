@@ -7,9 +7,6 @@ import {
   CaseSensitive,
   CheckCircle,
   Italic,
-  List,
-  ListChecks,
-  ListOrdered,
   Loader,
   Underline,
 } from 'lucide-react';
@@ -18,7 +15,7 @@ import EditToolbar from '../components/EditToolbar';
 import SlideCanvas from '../components/SlideCanvas';
 import SlideSidebar from '../components/SlideSidebar';
 import { usePresentationLoader } from '../hooks/usePresentationLoader';
-import { updateElement } from '../services/slideElementService';
+import { deleteElement, updateElement } from '../services/slideElementService';
 import { usePresentationStore } from '../store/presentationStore';
 
 const getTemplateType = (slide, index, totalSlides) => {
@@ -93,18 +90,24 @@ export default function EditPresentation() {
       if (!selectedElement) return;
       const updatedElement = { ...selectedElement, ...updates };
       setSelectedElement(updatedElement);
-      // Actualizar en presentation
-      const updatedPresentation = { ...presentation };
+      // Actualizar en presentation local
+      const updatedPresentation = { ...presentationData };
       const slide = updatedPresentation.slides[selectedSlideIndex];
       const elementIndex = slide.elements.findIndex(
         (el) => el.id === selectedElement.id,
       );
       if (elementIndex !== -1) {
         slide.elements[elementIndex] = updatedElement;
+        setPresentationData(updatedPresentation);
         setPresentationInStore(updatedPresentation);
       }
     },
-    [selectedElement, presentation, selectedSlideIndex, setPresentationInStore],
+    [
+      selectedElement,
+      presentationData,
+      selectedSlideIndex,
+      setPresentationInStore,
+    ],
   );
 
   const getTemplate = (slide) => {
@@ -129,12 +132,7 @@ export default function EditPresentation() {
       { Icon: Underline, label: 'Subrayado' },
       { Icon: CaseSensitive, label: 'Mayús' },
     ],
-    list: [
-      { Icon: List, label: 'Lista' },
-      { Icon: ListOrdered, label: 'Ordenada' },
-      { Icon: ListChecks, label: 'Viñetas' },
-      { Icon: CaseSensitive, label: 'Mayús' },
-    ],
+    list: [{ Icon: CaseSensitive, label: 'Mayús' }],
     image: [],
   };
 
@@ -210,9 +208,20 @@ export default function EditPresentation() {
     });
   };
 
+  const handleListTypeToggle = () => {
+    if (!selectedElement || selectedElement.type !== 'list') return;
+    const types = ['unordered', 'ordered', 'checkmark'];
+    const currentType = selectedElement.content?.listType || 'unordered';
+    const currentIndex = types.indexOf(currentType);
+    const nextType = types[(currentIndex + 1) % types.length];
+    updateSelectedElement({
+      content: { ...selectedElement.content, listType: nextType },
+    });
+  };
+
   const handleElementPosition = (action) => {
     if (!selectedElement) return;
-    const updatedPresentation = { ...presentation };
+    const updatedPresentation = { ...presentationData };
     const slide = updatedPresentation.slides[selectedSlideIndex];
     const elements = slide.elements;
 
@@ -309,6 +318,47 @@ export default function EditPresentation() {
     }
   }, []);
 
+  const deleteSelectedElement = useCallback(async () => {
+    if (!selectedElement || !selectedElement.id) return false;
+    try {
+      setSyncStatus('saving');
+      await deleteElement(selectedElement.id);
+
+      // Remove element locally
+      const updatedPresentation = { ...presentationData };
+      const slide = updatedPresentation.slides[selectedSlideIndex];
+      slide.elements = (slide.elements || []).filter(
+        (el) => el.id !== selectedElement.id,
+      );
+      setPresentationData(updatedPresentation);
+      setPresentationInStore(updatedPresentation);
+
+      setElementSnapshotsById((current) => {
+        const copy = { ...current };
+        delete copy[selectedElement.id];
+        return copy;
+      });
+
+      setSelectedElement(null);
+      setActiveToolbarButtons([]);
+      setIsEditingText(false);
+
+      setSyncStatus('saved');
+      setTimeout(() => setSyncStatus('idle'), 2000);
+      return true;
+    } catch (error) {
+      console.error('Error deleting element:', error);
+      setSyncStatus('error');
+      setTimeout(() => setSyncStatus('idle'), 3000);
+      return false;
+    }
+  }, [
+    selectedElement,
+    selectedSlideIndex,
+    presentationData,
+    setPresentationInStore,
+  ]);
+
   const handleBackClick = async () => {
     if (
       selectedElement &&
@@ -379,6 +429,33 @@ export default function EditPresentation() {
     saveOnSlideChange();
   }, [selectedSlideIndex]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset on slide change
+  useEffect(() => {
+    setElementSnapshotsById({});
+  }, [selectedSlideIndex]);
+
+  // Escuchar teclas Backspace/Delete para borrar elemento seleccionado
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (isEditingText) return;
+      if (!selectedElement) return;
+      const tag = document.activeElement?.tagName;
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        document.activeElement?.isContentEditable
+      )
+        return;
+      if (e.key === 'Backspace' || e.key === 'Delete') {
+        e.preventDefault();
+        deleteSelectedElement();
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [selectedElement, isEditingText, deleteSelectedElement]);
+
   if (loading || !presentation) {
     return (
       <div className="preview-container">
@@ -428,6 +505,7 @@ export default function EditPresentation() {
       </div>
 
       <EditToolbar
+        key={selectedElement?.id}
         selectedElement={selectedElement}
         toolbarButtons={toolbarButtons}
         activeToolbarButtons={activeToolbarButtons}
@@ -440,6 +518,7 @@ export default function EditPresentation() {
         borderRadiusValue={getBorderRadiusValue()}
         onBorderRadiusCycle={handleBorderRadiusCycle}
         onPositionAction={handleElementPosition}
+        onListTypeToggle={handleListTypeToggle}
       />
 
       <div className="edit-layout">
@@ -458,6 +537,7 @@ export default function EditPresentation() {
 
             <main className="edit-main-preview">
               <SlideCanvas
+                key={selectedSlide?.id}
                 selectedSlide={selectedSlide}
                 getTemplate={getTemplate(selectedSlide)}
                 onElementClick={handleElementClick}
