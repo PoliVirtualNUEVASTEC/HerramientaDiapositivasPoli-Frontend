@@ -14,16 +14,16 @@ import {
   Underline,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import AddElementPanel from '../components/AddElementPanel';
 import EditToolbar from '../components/EditToolbar';
 import SlideCanvas from '../components/SlideCanvas';
 import SlideSidebar from '../components/SlideSidebar';
 import { usePresentationLoader } from '../hooks/usePresentationLoader';
-import { updateElement } from '../services/slideElementService';
+import { createElement, updateElement } from '../services/slideElementService';
 import { usePresentationStore } from '../store/presentationStore';
 
 const getTemplateType = (slide, index, totalSlides) => {
   // 1. PRIORIDAD MÁXIMA: Si el slide ya tiene un background definido (clonado o guardado)
-  // No importa la posición, debe mantener su tipo para que el CSS/Imagen coincida.
   if (slide?.templateType) {
     return slide.templateType;
   }
@@ -107,7 +107,76 @@ export default function EditPresentation() {
     [selectedElement, presentation, selectedSlideIndex, setPresentationInStore],
   );
 
+  const handleAddText = async (type) => {
+    try {
+      const slideId = selectedSlide.id;
+
+      const newElement = await createElement(
+        slideId,
+        type,
+        { text: type === 'title' ? 'Título' : 'Texto' },
+        50,
+        type === 'title' ? 50 : 120,
+        300,
+        type === 'title' ? 80 : 60,
+        type === 'title'
+          ? { fontSize: 32, fontWeight: 'bold' }
+          : { fontSize: 18 },
+        0,
+      );
+
+      //ACTUALIZAR ESTADO LOCAL
+      const updatedPresentation = { ...presentationData };
+
+      updatedPresentation.slides[selectedSlideIndex].elements.push(newElement);
+
+      setPresentationData(updatedPresentation);
+      setPresentationInStore(updatedPresentation);
+    } catch (error) {
+      console.error('Error creando texto:', error);
+    }
+  };
+
+  const handleAddList = async (listType) => {
+    try {
+      const slideId = selectedSlide.id;
+
+      const newElement = await createElement(
+        slideId,
+        'list',
+        {
+          type: listType, // bullet | number | check
+          items: ['Elemento 1', 'Elemento 2', 'Elemento 3'],
+        },
+        50,
+        150,
+        300,
+        120,
+        { fontSize: 18 },
+        0,
+      );
+
+      const updatedPresentation = { ...presentationData };
+      const slide = updatedPresentation.slides[selectedSlideIndex];
+
+      if (!slide.elements) {
+        slide.elements = [];
+      }
+
+      slide.elements.push(newElement);
+
+      setPresentationData(updatedPresentation);
+      setPresentationInStore(updatedPresentation);
+    } catch (error) {
+      console.error('Error creando lista:', error);
+    }
+  };
+
   const getTemplate = (slide) => {
+    if (!slide?.background) {
+      return {};
+    }
+
     const background = slide.background;
     if (background.type === 'color')
       return { backgroundColor: background.color };
@@ -445,6 +514,15 @@ export default function EditPresentation() {
       <div className="edit-layout">
         {presentationData && (
           <>
+            <AddElementPanel
+              selectedSlideIndex={selectedSlideIndex}
+              onAddText={handleAddText}
+              onAddImage={(url) => console.log('Imagen añadida:', url)}
+              onAddList={handleAddList}
+              onAddTemplate={(templateId) =>
+                console.log('Plantilla aplicada:', templateId)
+              }
+            />
             <SlideSidebar
               slides={presentationData.slides}
               selectedSlideIndex={selectedSlideIndex}
@@ -459,7 +537,7 @@ export default function EditPresentation() {
             <main className="edit-main-preview">
               <SlideCanvas
                 selectedSlide={selectedSlide}
-                getTemplate={getTemplate(selectedSlide)}
+                getTemplate={getTemplate}
                 onElementClick={handleElementClick}
                 selectedElement={selectedElement}
                 onCanvasClick={handleCanvasClick}

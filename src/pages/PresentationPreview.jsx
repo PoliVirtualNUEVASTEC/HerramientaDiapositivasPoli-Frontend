@@ -41,7 +41,9 @@ export default function PresentationPreview() {
   };
 
   const getTemplate = (slide) => {
-    const background = slide.background;
+    const background = slide?.background;
+    if (!background) return {};
+
     if (background.type === 'color')
       return { backgroundColor: background.color };
     if (background.type === 'image')

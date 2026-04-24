@@ -391,7 +391,7 @@ export default function SlideCanvas({
       ref={canvasRef}
       className="slide-canvas"
       style={{
-        ...getTemplate,
+        ...getTemplate(selectedSlide),
         position: 'relative',
         backgroundSize: 'cover',
         backgroundPosition: 'center',

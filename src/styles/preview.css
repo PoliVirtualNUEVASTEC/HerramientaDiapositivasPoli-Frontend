@@ -381,7 +381,7 @@
   gap: 28px;
   width: 100%;
   margin: 24px 0 40px;
-  padding: 0 24px;
+  padding: 0 24px 0 100px;
   justify-content: center;
   align-items: flex-start;
 }
@@ -389,14 +389,21 @@
 .edit-sidebar {
   width: 260px;
   flex-shrink: 0;
-  height: fit-content;
+
+  height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+
+  min-height: 0;
+
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 20px;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
   padding: 20px;
-}
 
+  overflow: hidden;
+}
 .edit-sidebar-header {
   color: #1a4d1a;
   font-size: 18px;
