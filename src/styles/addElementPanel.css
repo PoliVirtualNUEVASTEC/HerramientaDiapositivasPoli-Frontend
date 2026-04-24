@@ -23,7 +23,7 @@
   align-items: center;
 }
 
-.tab-btn {
+.tab-btn-add {
   width: 70px;
   height: 70px;
   border: none;
@@ -38,7 +38,7 @@
   font-size: 18px;
 }
 
-.tab-btn:hover {
+.tab-btn-add:hover {
   background: #e2e8f0;
 }
 
@@ -57,7 +57,7 @@
 /* MODAL */
 .overlay-panel {
   position: fixed;
-  left: 90px;
+  left: 75px;
   width: 360px;
   max-height: 80vh;
 

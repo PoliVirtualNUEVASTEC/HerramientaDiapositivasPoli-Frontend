@@ -39,7 +39,7 @@ export default function AddElementPanel({ onAddText, onAddList }) {
         <div className="add-element-tabs">
           <button
             onMouseEnter={(e) => handleHover('text', e)}
-            className="tab-btn"
+            className="tab-btn-add"
             title="AgregarTexto"
           >
             <Type size={26} />
@@ -47,7 +47,7 @@ export default function AddElementPanel({ onAddText, onAddList }) {
 
           <button
             onMouseEnter={(e) => handleHover('image', e)}
-            className="tab-btn"
+            className="tab-btn-add"
             title="AgregarImagen"
           >
             <ImageIcon size={26} />
@@ -55,7 +55,7 @@ export default function AddElementPanel({ onAddText, onAddList }) {
 
           <button
             onMouseEnter={(e) => handleHover('list', e)}
-            className="tab-btn"
+            className="tab-btn-add"
             title="AgregarLista"
           >
             <ListIcon size={26} />
@@ -63,7 +63,7 @@ export default function AddElementPanel({ onAddText, onAddList }) {
 
           <button
             onMouseEnter={(e) => handleHover('background', e)}
-            className="tab-btn"
+            className="tab-btn-add"
             title="AgregarFondo"
           >
             <Palette size={26} />
