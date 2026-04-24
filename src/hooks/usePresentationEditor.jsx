@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { deleteElement, updateElement } from '../services/slideElementService';
+import {
+  createElement,
+  deleteElement,
+  updateElement,
+} from '../services/slideElementService';
 import {
   createElementSnapshot,
   getActiveToolbarButtons,
@@ -10,7 +14,6 @@ import {
   TOOLBAR_BUTTONS,
 } from '../utils/presentationEditor';
 import { normalizePresentationTemplates } from '../utils/presentationTemplates';
-import { createElement } from '../services/slideElementService';
 
 export function usePresentationEditor({
   navigate,
@@ -424,6 +427,38 @@ export function usePresentationEditor({
     }
   };
 
+  const handleAddImage = async (url) => {
+    try {
+      const slideId = selectedSlide.id;
+
+      const newElement = await createElement(
+        slideId,
+        'image',
+        { url },
+        80,
+        120,
+        280,
+        180,
+        { borderRadius: '0%' },
+        0,
+      );
+
+      const updatedPresentation = { ...presentationData };
+      const slide = updatedPresentation.slides[selectedSlideIndex];
+
+      if (!slide.elements) {
+        slide.elements = [];
+      }
+
+      slide.elements.push(newElement);
+
+      setPresentationData(updatedPresentation);
+      setPresentationInStore(updatedPresentation);
+    } catch (error) {
+      console.error('Error creando imagen:', error);
+    }
+  };
+
   useEffect(() => {
     if (!selectedElement) return;
 
@@ -537,6 +572,7 @@ export function usePresentationEditor({
     setPresentationState,
     setSelectedSlideIndex,
     handleAddText,
+    handleAddImage,
     handleAddList,
     syncStatus,
     toolbarButtons: TOOLBAR_BUTTONS,

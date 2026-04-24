@@ -50,6 +50,7 @@ export default function EditPresentation() {
     setPresentationState,
     setSelectedSlideIndex,
     handleAddText,
+    handleAddImage,
     handleAddList,
     syncStatus,
     toolbarButtons,
@@ -126,7 +127,7 @@ export default function EditPresentation() {
             <AddElementPanel
               selectedSlideIndex={selectedSlideIndex}
               onAddText={handleAddText}
-              onAddImage={(url) => console.log('Imagen añadida:', url)}
+              onAddImage={handleAddImage}
               onAddList={handleAddList}
               onAddTemplate={(templateId) =>
                 console.log('Plantilla aplicada:', templateId)
