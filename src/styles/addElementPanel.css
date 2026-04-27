@@ -1,16 +1,12 @@
-/* SIDEBAR */
 .add-element-panel {
   width: 80px;
   background: solid transparent;
   border-right: none;
-
   display: flex;
   flex-direction: column;
-
   position: fixed;
   top: 230px;
   left: 0;
-
   height: 180vh;
   z-index: 100;
 }
@@ -30,16 +26,18 @@
   background: #ccfccc;
   border-radius: 12px;
   cursor: pointer;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   font-size: 18px;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
 }
 
 .tab-btn-add:hover {
   background: #e2e8f0;
+  transform: translateX(2px);
 }
 
 /* MODAL PANEL */
@@ -48,15 +46,11 @@
   left: 75px;
   width: 360px;
   max-height: 80vh;
-
   background: white;
   border-radius: 16px;
   border: 1px solid #e2e8f0;
-
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-
   z-index: 999;
-
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -65,25 +59,21 @@
 /* CONTENIDO */
 .overlay-content {
   padding: 20px;
-
   display: flex;
   flex-direction: column;
   gap: 16px;
-
   height: 100%; /* 🔥 evita que todo haga scroll */
+  overflow-y: auto;
 }
 
-/* PANEL INTERNO */
 .panel-content {
   display: flex;
   flex-direction: column;
   gap: 12px;
-
   font-size: 14px;
 }
 
-/* INPUT */
-input {
+.panel-content input {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -99,12 +89,82 @@ input {
   cursor: pointer;
 }
 
-/* UPLOAD */
 .upload-area {
-  border: 2px dashed #ccc;
-  padding: 30px;
-  text-align: center;
-  border-radius: 10px;
+  border: 2px dashed #c7d8c4;
+  padding: 20px 18px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  background: linear-gradient(
+    180deg,
+    rgba(240, 253, 244, 0.95),
+    rgba(255, 255, 255, 1)
+  );
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.upload-area:hover {
+  border-color: #1a4d1a;
+  transform: translateY(-1px);
+}
+
+.upload-progress-ring {
+  --upload-progress: 0%;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(#1a4d1a var(--upload-progress), #d7e2d4 0);
+  flex-shrink: 0;
+}
+
+.upload-progress-inner {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: white;
+  color: #1a4d1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-area-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.upload-area-copy p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #16351a;
+}
+
+.upload-area-copy span {
+  color: #4b5563;
+  line-height: 1.4;
+}
+
+.image-library-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.image-library-header span {
+  font-weight: 700;
+  color: #16351a;
+}
+
+.image-library-header small {
+  color: #6b7280;
 }
 
 /* ========================= */
@@ -200,26 +260,96 @@ input {
 
 .image-history {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.image-history img {
+.image-history-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #6b7280;
+}
+
+.image-history-card {
+  position: relative;
+  border: 1px solid #d9e4d7;
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.image-history-card:hover {
+  transform: translateY(-2px);
+  border-color: #1a4d1a;
+  box-shadow: 0 8px 20px rgba(26, 77, 26, 0.14);
+}
+
+.image-history-card-preview {
   width: 100%;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 6px;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
   cursor: pointer;
-  transition: 0.2s;
 }
 
-.image-history img:hover {
+.image-history-card-preview:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.image-history-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.image-history-card-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(17, 24, 39, 0.85);
+  color: white;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.image-history-card:hover .image-history-card-delete,
+.image-history-card:focus-within .image-history-card-delete {
+  opacity: 1;
+}
+
+.image-history-card-delete:hover:not(:disabled) {
+  background: #b91c1c;
   transform: scale(1.05);
 }
 
 /* ========================= */
 /* LISTAS */
 /* ========================= */
+.image-history-card-delete:disabled {
+  opacity: 1;
+  cursor: wait;
+  background: rgba(107, 114, 128, 0.9);
+}
 
 .list-options {
   display: flex;

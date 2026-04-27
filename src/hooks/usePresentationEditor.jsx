@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { deleteElement, updateElement } from '../services/slideElementService';
+import {
+  createElement,
+  deleteElement,
+  updateElement,
+} from '../services/slideElementService';
 import {
   createElementSnapshot,
   getActiveToolbarButtons,
@@ -10,7 +14,6 @@ import {
   TOOLBAR_BUTTONS,
 } from '../utils/presentationEditor';
 import { normalizePresentationTemplates } from '../utils/presentationTemplates';
-import { createElement } from '../services/slideElementService';
 
 export function usePresentationEditor({
   navigate,
@@ -339,6 +342,45 @@ export function usePresentationEditor({
     [updateSelectedElement],
   );
 
+  const handleFontFamilyChange = useCallback(
+    (fontFamily) => {
+      const currentElement = selectedElementRef.current;
+
+      if (!currentElement || !['title', 'text', 'list'].includes(currentElement.type)) {
+        return;
+      }
+
+      updateSelectedElement({
+        styles: {
+          ...currentElement.styles,
+          fontFamily,
+        },
+      });
+    },
+    [updateSelectedElement],
+  );
+
+  const handleTextAlignToggle = useCallback(() => {
+    const currentElement = selectedElementRef.current;
+
+    if (!currentElement || !['title', 'text', 'list'].includes(currentElement.type)) {
+      return;
+    }
+
+    const alignments = ['left', 'center', 'right', 'justify'];
+    const currentAlignment = currentElement.styles?.textAlign || 'left';
+    const currentIndex = alignments.indexOf(currentAlignment);
+    const nextAlignment =
+      alignments[(currentIndex + 1 + alignments.length) % alignments.length];
+
+    updateSelectedElement({
+      styles: {
+        ...currentElement.styles,
+        textAlign: nextAlignment,
+      },
+    });
+  }, [updateSelectedElement]);
+
   const handleCanvasClick = useCallback(async () => {
     await saveCurrentElementIfDirty();
     resetSelection();
@@ -421,6 +463,38 @@ export function usePresentationEditor({
       setPresentationInStore(updatedPresentation);
     } catch (error) {
       console.error('Error creando lista:', error);
+    }
+  };
+
+  const handleAddImage = async (url) => {
+    try {
+      const slideId = selectedSlide.id;
+
+      const newElement = await createElement(
+        slideId,
+        'image',
+        { url },
+        80,
+        120,
+        280,
+        180,
+        { borderRadius: '0%' },
+        0,
+      );
+
+      const updatedPresentation = { ...presentationData };
+      const slide = updatedPresentation.slides[selectedSlideIndex];
+
+      if (!slide.elements) {
+        slide.elements = [];
+      }
+
+      slide.elements.push(newElement);
+
+      setPresentationData(updatedPresentation);
+      setPresentationInStore(updatedPresentation);
+    } catch (error) {
+      console.error('Error creando imagen:', error);
     }
   };
 
@@ -525,6 +599,8 @@ export function usePresentationEditor({
     handleElementChange,
     handleElementClick,
     handleElementPosition,
+    handleFontFamilyChange,
+    handleTextAlignToggle,
     handleFontSizeChange,
     handleListTypeToggle,
     handleToolbarToggle,
@@ -537,8 +613,11 @@ export function usePresentationEditor({
     setPresentationState,
     setSelectedSlideIndex,
     handleAddText,
+    handleAddImage,
     handleAddList,
+    fontFamilyValue: selectedElement?.styles?.fontFamily || 'Arial',
     syncStatus,
+    textAlignValue: selectedElement?.styles?.textAlign || 'left',
     toolbarButtons: TOOLBAR_BUTTONS,
   };
 }

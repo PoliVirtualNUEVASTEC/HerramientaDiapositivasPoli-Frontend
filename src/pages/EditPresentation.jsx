@@ -5,13 +5,13 @@ import EditToolbar from '../components/EditToolbar';
 import Navbar from '../components/Navbar';
 import SlideCanvas from '../components/SlideCanvas';
 import SlideSidebar from '../components/SlideSidebar';
+import { useAddSlideTemplates } from '../hooks/useAddSlideTemplates';
 import { usePresentationEditor } from '../hooks/usePresentationEditor';
 import { usePresentationLoader } from '../hooks/usePresentationLoader';
-import {useAddSlideTemplates} from '../hooks/useAddSlideTemplates';
 import { usePresentationStore } from '../store/presentationStore';
 import '../styles/preview.css';
-import { getSlideTemplateStyles } from '../utils/presentationTemplates';
 import { updateSlide } from '../services/slideService';
+import { getSlideTemplateStyles } from '../utils/presentationTemplates';
 
 export default function EditPresentation() {
   const navigate = useNavigate();
@@ -31,6 +31,7 @@ export default function EditPresentation() {
   const {
     activeToolbarButtons,
     borderRadiusValue,
+    fontFamilyValue,
     fontSizeValue,
     handleAspectRatioToggle,
     handleBackClick,
@@ -40,6 +41,8 @@ export default function EditPresentation() {
     handleElementChange,
     handleElementClick,
     handleElementPosition,
+    handleFontFamilyChange,
+    handleTextAlignToggle,
     handleFontSizeChange,
     handleListTypeToggle,
     handleToolbarToggle,
@@ -52,8 +55,10 @@ export default function EditPresentation() {
     setPresentationState,
     setSelectedSlideIndex,
     handleAddText,
+    handleAddImage,
     handleAddList,
     syncStatus,
+    textAlignValue,
     toolbarButtons,
   } = usePresentationEditor({
     navigate,
@@ -62,11 +67,11 @@ export default function EditPresentation() {
   });
 
   const { addSlideWithTemplate } = useAddSlideTemplates({
-  presentationData,
-  setPresentationData: setPresentationState, // 🔥 IMPORTANTE
-  setPresentationInStore,
-  selectedSlideIndex,
-  setSelectedSlideIndex,
+    presentationData,
+    setPresentationData: setPresentationState,
+    setPresentationInStore,
+    selectedSlideIndex,
+    setSelectedSlideIndex,
   });
 
   if (loading || !presentation) {
@@ -80,40 +85,40 @@ export default function EditPresentation() {
     );
   }
 
-const handleApplyTemplate = async (templateUrl) => {
-  if (!presentationData) return;
+  const handleApplyTemplate = async (templateUrl) => {
+    if (!presentationData) return;
 
-  const currentSlide = presentationData.slides[selectedSlideIndex];
+    const currentSlide = presentationData.slides[selectedSlideIndex];
 
-  const updatedBackground = {
-    type: 'image',
-    url: templateUrl,
+    const updatedBackground = {
+      type: 'image',
+      url: templateUrl,
+    };
+
+    try {
+      //1. Guardar en backend
+      await updateSlide(currentSlide.id, {
+        background: updatedBackground,
+      });
+
+      //2. Actualizar frontend SIN tocar elements
+      const updatedSlides = presentationData.slides.map((slide, index) =>
+        index === selectedSlideIndex
+          ? {
+              ...slide,
+              background: updatedBackground,
+            }
+          : slide,
+      );
+
+      setPresentationState({
+        ...presentationData,
+        slides: updatedSlides,
+      });
+    } catch (error) {
+      console.error('Error aplicando plantilla:', error);
+    }
   };
-
-  try {
-    // 🔥 1. Guardar en backend
-    await updateSlide(currentSlide.id, {
-      background: updatedBackground,
-    });
-
-    // 🔥 2. Actualizar frontend SIN tocar elements
-    const updatedSlides = presentationData.slides.map((slide, index) =>
-      index === selectedSlideIndex
-        ? {
-            ...slide,
-            background: updatedBackground, // 👈 SOLO esto cambia
-          }
-        : slide
-    );
-
-    setPresentationState({
-      ...presentationData,
-      slides: updatedSlides,
-    });
-  } catch (error) {
-    console.error('Error aplicando plantilla:', error);
-  }
-};
 
   return (
     <div className="preview-container">
@@ -157,6 +162,10 @@ const handleApplyTemplate = async (templateUrl) => {
         fontSizeValue={fontSizeValue}
         onFontSizeChange={handleFontSizeChange}
         onColorChange={handleColorChange}
+        fontFamilyValue={fontFamilyValue}
+        onFontFamilyChange={handleFontFamilyChange}
+        textAlignValue={textAlignValue}
+        onTextAlignToggle={handleTextAlignToggle}
         maintainAspectRatio={selectedElement?.maintainAspectRatio}
         onAspectRatioToggle={handleAspectRatioToggle}
         borderRadiusValue={borderRadiusValue}
@@ -169,12 +178,11 @@ const handleApplyTemplate = async (templateUrl) => {
         {presentationData && (
           <>
             <AddElementPanel
-              selectedSlideIndex={selectedSlideIndex}
               onAddText={handleAddText}
-              onAddImage={(url) => console.log('Imagen añadida:', url)}
+              onAddImage={handleAddImage}
               onAddList={handleAddList}
               onAddTemplate={addSlideWithTemplate}
-              onApplyTemplate={handleApplyTemplate} 
+              onApplyTemplate={handleApplyTemplate}
             />
             <SlideSidebar
               slides={presentationData.slides}
