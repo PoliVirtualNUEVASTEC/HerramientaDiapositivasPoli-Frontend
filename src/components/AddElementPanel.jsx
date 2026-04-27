@@ -3,16 +3,19 @@ import {
   Image as ImageIcon,
   List as ListIcon,
   Palette,
+  Trash2,
   Type,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
+  deleteImage,
   getUserImages,
   markUserImageAsAccessed,
   uploadUserImage,
 } from '../services/userImageService';
+import { showConfirm } from '../utils/confirmToast';
 import '../styles/addElementPanel.css';
 
 const sortImagesByRecentAccess = (images) =>
@@ -35,6 +38,7 @@ export default function AddElementPanel({ onAddText, onAddImage, onAddList }) {
   const [hasLoadedImages, setHasLoadedImages] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isPickingImage, setIsPickingImage] = useState(false);
+  const [deletingImageId, setDeletingImageId] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const loadImages = useCallback(async () => {
@@ -161,6 +165,35 @@ export default function AddElementPanel({ onAddText, onAddImage, onAddList }) {
     void markUserImageAsAccessed(image.id).catch(() => {});
   };
 
+  const handleDeleteImage = (image) => {
+    showConfirm({
+      title: 'Borrar imagen',
+      description:
+        'Esta imagen se eliminará de tu biblioteca y no podrás recuperarla.',
+      confirmText: 'Borrar',
+      cancelText: 'Volver',
+      onConfirm: async () => {
+        setDeletingImageId(image.id);
+
+        try {
+          await deleteImage(image.id);
+          setImages((currentImages) =>
+            currentImages.filter(
+              (currentImage) => currentImage.id !== image.id,
+            ),
+          );
+          toast.success('Imagen eliminada');
+        } catch (error) {
+          const message =
+            error.response?.data?.error || 'No se pudo eliminar la imagen';
+          toast.error(message);
+        } finally {
+          setDeletingImageId(null);
+        }
+      },
+    });
+  };
+
   return (
     <div onMouseLeave={handleClosePanel}>
       <div className="add-element-panel">
@@ -214,8 +247,10 @@ export default function AddElementPanel({ onAddText, onAddImage, onAddList }) {
             {activePanel === 'image' && (
               <ImagePanel
                 images={images}
+                deletingImageId={deletingImageId}
                 isLoadingImages={isLoadingImages}
                 isUploading={isUploading}
+                onDeleteImage={handleDeleteImage}
                 onOpenFilePicker={handleImagePickerOpen}
                 onSelectImage={handleSelectImage}
                 onUpload={handleImageUpload}
@@ -250,9 +285,11 @@ function TextPanel({ onAddText }) {
 }
 
 function ImagePanel({
+  deletingImageId,
   images,
   isLoadingImages,
   isUploading,
+  onDeleteImage,
   onOpenFilePicker,
   onSelectImage,
   onUpload,
@@ -296,16 +333,32 @@ function ImagePanel({
           <p className="image-history-empty">No hay imágenes aún</p>
         )}
 
-        {images.map((image) => (
-          <button
-            key={image.id}
-            className="image-history-card"
-            onClick={() => onSelectImage(image)}
-            type="button"
-          >
-            <img src={image.url} alt="Imagen subida por el usuario" />
-          </button>
-        ))}
+        {images.map((image) => {
+          const isDeleting = deletingImageId === image.id;
+
+          return (
+            <div key={image.id} className="image-history-card">
+              <button
+                className="image-history-card-preview"
+                disabled={isDeleting}
+                onClick={() => onSelectImage(image)}
+                type="button"
+              >
+                <img src={image.url} alt="Imagen subida por el usuario" />
+              </button>
+
+              <button
+                aria-label="Borrar imagen"
+                className="image-history-card-delete"
+                disabled={isDeleting}
+                onClick={() => onDeleteImage(image)}
+                type="button"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

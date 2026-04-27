@@ -29,6 +29,7 @@ export default function EditPresentation() {
   const {
     activeToolbarButtons,
     borderRadiusValue,
+    fontFamilyValue,
     fontSizeValue,
     handleAspectRatioToggle,
     handleBackClick,
@@ -38,6 +39,8 @@ export default function EditPresentation() {
     handleElementChange,
     handleElementClick,
     handleElementPosition,
+    handleFontFamilyChange,
+    handleTextAlignToggle,
     handleFontSizeChange,
     handleListTypeToggle,
     handleToolbarToggle,
@@ -53,6 +56,7 @@ export default function EditPresentation() {
     handleAddImage,
     handleAddList,
     syncStatus,
+    textAlignValue,
     toolbarButtons,
   } = usePresentationEditor({
     navigate,
@@ -113,6 +117,10 @@ export default function EditPresentation() {
         fontSizeValue={fontSizeValue}
         onFontSizeChange={handleFontSizeChange}
         onColorChange={handleColorChange}
+        fontFamilyValue={fontFamilyValue}
+        onFontFamilyChange={handleFontFamilyChange}
+        textAlignValue={textAlignValue}
+        onTextAlignToggle={handleTextAlignToggle}
         maintainAspectRatio={selectedElement?.maintainAspectRatio}
         onAspectRatioToggle={handleAspectRatioToggle}
         borderRadiusValue={borderRadiusValue}

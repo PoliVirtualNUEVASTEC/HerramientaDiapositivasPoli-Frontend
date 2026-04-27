@@ -117,7 +117,7 @@ const getTextBoxOptions = (element) => {
     bold: isBold(styles.fontWeight),
     italic: styles.fontStyle === 'italic',
     underline: styles.textDecoration === 'underline',
-    align: ['left', 'center', 'right'].includes(styles.textAlign)
+    align: ['left', 'center', 'right', 'justify'].includes(styles.textAlign)
       ? styles.textAlign
       : 'left',
     fontSize: toPoints(styles.fontSize || 16),

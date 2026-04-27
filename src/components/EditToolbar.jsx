@@ -1,7 +1,12 @@
 import {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
   ArrowDown,
   ArrowDownRight,
   ArrowUp,
+  ChevronDown,
   Layers,
   List,
   ListChecks,
@@ -22,6 +27,10 @@ export default function EditToolbar({
   fontSizeValue,
   onFontSizeChange,
   onColorChange,
+  fontFamilyValue,
+  onFontFamilyChange,
+  textAlignValue,
+  onTextAlignToggle,
   maintainAspectRatio,
   onAspectRatioToggle,
   borderRadiusValue,
@@ -31,10 +40,21 @@ export default function EditToolbar({
 }) {
   const [selectedColor, setSelectedColor] = useState('#000000');
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showFontMenu, setShowFontMenu] = useState(false);
   const [showPositionMenu, setShowPositionMenu] = useState(false);
   const colorPickerRef = useRef(null);
+  const fontMenuRef = useRef(null);
   const positionMenuRef = useRef(null);
   const previousSelectedElementId = useRef(null);
+  const fontOptions = [
+    { label: 'Arial', value: 'Arial' },
+    { label: 'Verdana', value: 'Verdana' },
+    { label: 'Tahoma', value: 'Tahoma' },
+    { label: 'Trebuchet MS', value: 'Trebuchet MS' },
+    { label: 'Georgia', value: 'Georgia' },
+    { label: 'Times New Roman', value: 'Times New Roman' },
+    { label: 'Courier New', value: 'Courier New' },
+  ];
 
   useEffect(() => {
     const elementColor = selectedElement?.styles?.color || '#000000';
@@ -44,6 +64,8 @@ export default function EditToolbar({
 
     if (selectedElement?.id !== previousSelectedElementId.current) {
       setShowColorPicker(false);
+      setShowFontMenu(false);
+      setShowPositionMenu(false);
       previousSelectedElementId.current = selectedElement?.id;
     }
   }, [selectedElement, selectedColor]);
@@ -56,6 +78,9 @@ export default function EditToolbar({
       ) {
         setShowColorPicker(false);
       }
+      if (fontMenuRef.current && !fontMenuRef.current.contains(event.target)) {
+        setShowFontMenu(false);
+      }
       if (
         positionMenuRef.current &&
         !positionMenuRef.current.contains(event.target)
@@ -64,14 +89,14 @@ export default function EditToolbar({
       }
     };
 
-    if (showColorPicker || showPositionMenu) {
+    if (showColorPicker || showFontMenu || showPositionMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showColorPicker, showPositionMenu]);
+  }, [showColorPicker, showFontMenu, showPositionMenu]);
 
   const handleColorChange = (color) => {
     setSelectedColor(color);
@@ -82,9 +107,26 @@ export default function EditToolbar({
     setShowColorPicker(!showColorPicker);
   };
 
+  const toggleFontMenu = () => {
+    setShowFontMenu((current) => !current);
+  };
+
   const togglePositionMenu = () => {
     setShowPositionMenu((current) => !current);
   };
+
+  const textAlignmentOptions = {
+    left: { Icon: AlignLeft, label: 'Izquierda' },
+    center: { Icon: AlignCenter, label: 'Centro' },
+    right: { Icon: AlignRight, label: 'Derecha' },
+    justify: { Icon: AlignJustify, label: 'Justificado' },
+  };
+
+  const currentTextAlignment =
+    textAlignmentOptions[textAlignValue] || textAlignmentOptions.left;
+  const CurrentTextAlignmentIcon = currentTextAlignment.Icon;
+  const currentFont =
+    fontOptions.find((font) => font.value === fontFamilyValue) || fontOptions[0];
 
   const handlePositionClick = (action) => {
     onPositionAction(action);
@@ -93,6 +135,40 @@ export default function EditToolbar({
   return (
     <div className={`edit-toolbar ${selectedElement ? 'visible' : 'hidden'}`}>
       <div className="edit-toolbar-buttons">
+        {['title', 'text', 'list'].includes(selectedElement?.type) && (
+          <div className="font-menu-container" ref={fontMenuRef}>
+            <button
+              type="button"
+              className={`toolbar-button font-menu-trigger ${showFontMenu ? 'active' : ''}`}
+              onClick={toggleFontMenu}
+              title={`Fuente: ${currentFont.label}`}
+            >
+              <Type size={18} />
+              <span className="font-menu-label">{currentFont.label}</span>
+              <ChevronDown size={16} />
+            </button>
+
+            {showFontMenu && (
+              <div className="font-menu-popup">
+                {fontOptions.map((font) => (
+                  <button
+                    key={font.value}
+                    type="button"
+                    className={`toolbar-button font-menu-button ${font.value === currentFont.value ? 'active' : ''}`}
+                    onClick={() => {
+                      onFontFamilyChange(font.value);
+                      setShowFontMenu(false);
+                    }}
+                    style={{ fontFamily: font.value }}
+                  >
+                    <span>{font.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {selectedElement?.type !== 'image' && (
           <>
             <div className="font-size-group">
@@ -140,6 +216,20 @@ export default function EditToolbar({
                 </div>
               )}
             </div>
+          </>
+        )}
+
+        {['title', 'text', 'list'].includes(selectedElement?.type) && (
+          <>
+            <button
+              type="button"
+              className="toolbar-button"
+              onClick={onTextAlignToggle}
+              title={`Alineación: ${currentTextAlignment.label}`}
+            >
+              <CurrentTextAlignmentIcon size={18} />
+              <span>{currentTextAlignment.label}</span>
+            </button>
           </>
         )}
 

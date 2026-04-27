@@ -342,6 +342,45 @@ export function usePresentationEditor({
     [updateSelectedElement],
   );
 
+  const handleFontFamilyChange = useCallback(
+    (fontFamily) => {
+      const currentElement = selectedElementRef.current;
+
+      if (!currentElement || !['title', 'text', 'list'].includes(currentElement.type)) {
+        return;
+      }
+
+      updateSelectedElement({
+        styles: {
+          ...currentElement.styles,
+          fontFamily,
+        },
+      });
+    },
+    [updateSelectedElement],
+  );
+
+  const handleTextAlignToggle = useCallback(() => {
+    const currentElement = selectedElementRef.current;
+
+    if (!currentElement || !['title', 'text', 'list'].includes(currentElement.type)) {
+      return;
+    }
+
+    const alignments = ['left', 'center', 'right', 'justify'];
+    const currentAlignment = currentElement.styles?.textAlign || 'left';
+    const currentIndex = alignments.indexOf(currentAlignment);
+    const nextAlignment =
+      alignments[(currentIndex + 1 + alignments.length) % alignments.length];
+
+    updateSelectedElement({
+      styles: {
+        ...currentElement.styles,
+        textAlign: nextAlignment,
+      },
+    });
+  }, [updateSelectedElement]);
+
   const handleCanvasClick = useCallback(async () => {
     await saveCurrentElementIfDirty();
     resetSelection();
@@ -560,6 +599,8 @@ export function usePresentationEditor({
     handleElementChange,
     handleElementClick,
     handleElementPosition,
+    handleFontFamilyChange,
+    handleTextAlignToggle,
     handleFontSizeChange,
     handleListTypeToggle,
     handleToolbarToggle,
@@ -574,7 +615,9 @@ export function usePresentationEditor({
     handleAddText,
     handleAddImage,
     handleAddList,
+    fontFamilyValue: selectedElement?.styles?.fontFamily || 'Arial',
     syncStatus,
+    textAlignValue: selectedElement?.styles?.textAlign || 'left',
     toolbarButtons: TOOLBAR_BUTTONS,
   };
 }

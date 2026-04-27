@@ -190,12 +190,12 @@
 }
 
 .image-history-card {
+  position: relative;
   border: 1px solid #d9e4d7;
   background: white;
   border-radius: 12px;
   padding: 0;
   overflow: hidden;
-  cursor: pointer;
   aspect-ratio: 1 / 1;
   transition:
     transform 0.2s ease,
@@ -209,11 +209,62 @@
   box-shadow: 0 8px 20px rgba(26, 77, 26, 0.14);
 }
 
+.image-history-card-preview {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.image-history-card-preview:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .image-history-card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.image-history-card-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(17, 24, 39, 0.85);
+  color: white;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.image-history-card:hover .image-history-card-delete,
+.image-history-card:focus-within .image-history-card-delete {
+  opacity: 1;
+}
+
+.image-history-card-delete:hover:not(:disabled) {
+  background: #b91c1c;
+  transform: scale(1.05);
+}
+
+.image-history-card-delete:disabled {
+  opacity: 1;
+  cursor: wait;
+  background: rgba(107, 114, 128, 0.9);
 }
 
 .list-options {

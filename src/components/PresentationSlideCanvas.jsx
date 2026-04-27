@@ -76,7 +76,13 @@ const renderElement = (element) => {
             }
           >
             {listType === 'checkmark' && <span>{CHECKBOX_SYMBOL}</span>}
-            {item}
+            {listType === 'checkmark' ? (
+              <span style={{ flex: 1, textAlign: style.textAlign || 'left' }}>
+                {item}
+              </span>
+            ) : (
+              item
+            )}
           </li>
         ))}
       </ul>

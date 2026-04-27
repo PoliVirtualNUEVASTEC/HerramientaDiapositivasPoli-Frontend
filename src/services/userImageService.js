@@ -30,3 +30,8 @@ export const markUserImageAsAccessed = async (imageId) => {
   const response = await api.post(`/api/user-images/${imageId}/access`);
   return response.data;
 };
+
+export const deleteImage = async (id) => {
+  const response = await api.delete(`/api/user-images/${id}`);
+  return response.data;
+};

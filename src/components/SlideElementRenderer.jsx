@@ -197,6 +197,7 @@ function SlideListEditor({ element, innerStyle, onElementChange }) {
               fontStyle: innerStyle.fontStyle,
               textDecoration: innerStyle.textDecoration,
               color: innerStyle.color,
+              textAlign: innerStyle.textAlign || 'left',
               outline: 'none',
               padding: '2px 0',
             }}
@@ -346,7 +347,13 @@ export default function SlideElementRenderer({
             }
           >
             {listType === 'checkmark' && <span>{CHECKBOX_SYMBOL}</span>}
-            {item}
+            {listType === 'checkmark' ? (
+              <span style={{ flex: 1, textAlign: innerStyle.textAlign || 'left' }}>
+                {item}
+              </span>
+            ) : (
+              item
+            )}
           </li>
         ))}
       </ul>,
