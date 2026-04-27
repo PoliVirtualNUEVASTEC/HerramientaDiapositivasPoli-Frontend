@@ -4,14 +4,33 @@ import {
   Palette,
   Type,
 } from 'lucide-react';
-import { useState } from 'react';
-
+import { useEffect, useState } from 'react';
+import { getTemplates } from '../services/templateService';
 import '../styles/addElementPanel.css';
 
-export default function AddElementPanel({ onAddText, onAddList }) {
+export default function AddElementPanel({
+  selectedSlideIndex,
+  onAddText,
+  onAddImage,
+  onAddList,
+  onAddTemplate,
+  onApplyTemplate,
+}) {
   const [activePanel, setActivePanel] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [images, setImages] = useState([]);
   const [panelTop, setPanelTop] = useState(80);
+  const [templates, setTemplates] = useState([]); // ✅ NUEVO
+
+  // 🔥 cargar templates desde supabase
+  useEffect(() => {
+    const loadTemplates = async () => {
+      const data = await getTemplates();
+      setTemplates(data || []);
+    };
+
+    loadTemplates();
+  }, []);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -21,11 +40,9 @@ export default function AddElementPanel({ onAddText, onAddList }) {
     setImages((prev) => [...prev, url]);
   };
 
-  //CONTROLA POSICIÓN DEL PANEL
+  // CONTROLA POSICIÓN DEL PANEL
   const handleHover = (panel, e) => {
     const rect = e.currentTarget.getBoundingClientRect();
-
-    // evita que se salga por abajo
     const safeTop = Math.min(rect.top, window.innerHeight - 320);
 
     setPanelTop(safeTop);
@@ -80,11 +97,24 @@ export default function AddElementPanel({ onAddText, onAddList }) {
         >
           <div className="overlay-content">
             {activePanel === 'text' && <TextPanel onAddText={onAddText} />}
+
             {activePanel === 'image' && (
               <ImagePanel images={images} onUpload={handleImageUpload} />
             )}
-            {activePanel === 'list' && <ListPanel onAddList={onAddList} />}
-            {activePanel === 'background' && <BackgroundPanel />}
+
+            {activePanel === 'list' && (
+              <ListPanel onAddList={onAddList} />
+            )}
+
+            {activePanel === 'background' && (
+              <BackgroundPanel
+                templates={templates}
+                selectedTemplate={selectedTemplate}
+                setSelectedTemplate={setSelectedTemplate}
+                onApplyTemplate={onApplyTemplate}
+                onAddTemplate={onAddTemplate}
+              />
+            )}
           </div>
         </div>
       )}
@@ -132,6 +162,7 @@ function ImagePanel({ images, onUpload }) {
     </div>
   );
 }
+
 function ListPanel({ onAddList }) {
   return (
     <div className="panel-content">
@@ -154,19 +185,48 @@ function ListPanel({ onAddList }) {
   );
 }
 
-function BackgroundPanel() {
+function BackgroundPanel({
+  templates,
+  selectedTemplate,
+  setSelectedTemplate,
+  onApplyTemplate,
+  onAddTemplate,
+}) {
   return (
     <div className="panel-content">
-      <h3>Fondos</h3>
+      <h3>Plantillas</h3>
 
+      {/* GRID */}
       <div className="template-grid">
-        <div className="template-card">🌄</div>
-        <div className="template-card">🌊</div>
-        <div className="template-card">🌿</div>
-        <div className="template-card">🌇</div>
+        {(templates || []).map((template, index) => (
+          <div
+            key={index}
+            className={`template-card ${
+              selectedTemplate === template.url ? 'selected' : ''
+            }`}
+            onClick={() => setSelectedTemplate(template.url)}
+          >
+            <img src={template.url} alt={template.name} />
+          </div>
+        ))}
       </div>
 
-      <button className="btn-confirm">Aplicar</button>
+      {/* BOTONES INFERIORES */}
+      <div className="template-footer">
+        <button
+          disabled={!selectedTemplate}
+          onClick={() => onApplyTemplate(selectedTemplate)}
+        >
+          Aplicar a slide
+        </button>
+
+        <button
+          disabled={!selectedTemplate}
+          onClick={() => onAddTemplate(selectedTemplate)}
+        >
+          Nueva diapositiva
+        </button>
+      </div>
     </div>
   );
 }

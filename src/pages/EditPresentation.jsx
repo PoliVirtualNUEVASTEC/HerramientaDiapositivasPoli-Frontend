@@ -7,9 +7,11 @@ import SlideCanvas from '../components/SlideCanvas';
 import SlideSidebar from '../components/SlideSidebar';
 import { usePresentationEditor } from '../hooks/usePresentationEditor';
 import { usePresentationLoader } from '../hooks/usePresentationLoader';
+import {useAddSlideTemplates} from '../hooks/useAddSlideTemplates';
 import { usePresentationStore } from '../store/presentationStore';
 import '../styles/preview.css';
 import { getSlideTemplateStyles } from '../utils/presentationTemplates';
+import { updateSlide } from '../services/slideService';
 
 export default function EditPresentation() {
   const navigate = useNavigate();
@@ -59,6 +61,14 @@ export default function EditPresentation() {
     setPresentationInStore,
   });
 
+  const { addSlideWithTemplate } = useAddSlideTemplates({
+  presentationData,
+  setPresentationData: setPresentationState, // 🔥 IMPORTANTE
+  setPresentationInStore,
+  selectedSlideIndex,
+  setSelectedSlideIndex,
+  });
+
   if (loading || !presentation) {
     return (
       <div className="preview-container">
@@ -69,6 +79,41 @@ export default function EditPresentation() {
       </div>
     );
   }
+
+const handleApplyTemplate = async (templateUrl) => {
+  if (!presentationData) return;
+
+  const currentSlide = presentationData.slides[selectedSlideIndex];
+
+  const updatedBackground = {
+    type: 'image',
+    url: templateUrl,
+  };
+
+  try {
+    // 🔥 1. Guardar en backend
+    await updateSlide(currentSlide.id, {
+      background: updatedBackground,
+    });
+
+    // 🔥 2. Actualizar frontend SIN tocar elements
+    const updatedSlides = presentationData.slides.map((slide, index) =>
+      index === selectedSlideIndex
+        ? {
+            ...slide,
+            background: updatedBackground, // 👈 SOLO esto cambia
+          }
+        : slide
+    );
+
+    setPresentationState({
+      ...presentationData,
+      slides: updatedSlides,
+    });
+  } catch (error) {
+    console.error('Error aplicando plantilla:', error);
+  }
+};
 
   return (
     <div className="preview-container">
@@ -128,9 +173,8 @@ export default function EditPresentation() {
               onAddText={handleAddText}
               onAddImage={(url) => console.log('Imagen añadida:', url)}
               onAddList={handleAddList}
-              onAddTemplate={(templateId) =>
-                console.log('Plantilla aplicada:', templateId)
-              }
+              onAddTemplate={addSlideWithTemplate}
+              onApplyTemplate={handleApplyTemplate} 
             />
             <SlideSidebar
               slides={presentationData.slides}
