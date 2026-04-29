@@ -48,6 +48,7 @@ export default function Dashboard() {
       title: data?.title || mockPresentation.title,
       createdAt: new Date(data.createdAt).toLocaleDateString('es-CO'),
     };
+    console.log(data.presentationAI);
     navigate(`/preview/${presentation.id}`);
   };
 

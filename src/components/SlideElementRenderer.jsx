@@ -348,7 +348,9 @@ export default function SlideElementRenderer({
           >
             {listType === 'checkmark' && <span>{CHECKBOX_SYMBOL}</span>}
             {listType === 'checkmark' ? (
-              <span style={{ flex: 1, textAlign: innerStyle.textAlign || 'left' }}>
+              <span
+                style={{ flex: 1, textAlign: innerStyle.textAlign || 'left' }}
+              >
                 {item}
               </span>
             ) : (
@@ -364,8 +366,11 @@ export default function SlideElementRenderer({
     return renderWrapper(
       <img
         style={{ ...innerStyle, objectFit: 'fill' }}
-        src={element.content?.url || element.content?.image}
-        alt=""
+        src={
+          element.content?.resolvedImage.url ||
+          element.content?.resolvedImage.image
+        }
+        alt={element.content.resolvedImage.alt}
         draggable={false}
       />,
     );

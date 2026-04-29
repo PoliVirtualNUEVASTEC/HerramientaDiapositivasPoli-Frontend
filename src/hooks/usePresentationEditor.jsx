@@ -346,7 +346,10 @@ export function usePresentationEditor({
     (fontFamily) => {
       const currentElement = selectedElementRef.current;
 
-      if (!currentElement || !['title', 'text', 'list'].includes(currentElement.type)) {
+      if (
+        !currentElement ||
+        !['title', 'text', 'list'].includes(currentElement.type)
+      ) {
         return;
       }
 
@@ -363,7 +366,10 @@ export function usePresentationEditor({
   const handleTextAlignToggle = useCallback(() => {
     const currentElement = selectedElementRef.current;
 
-    if (!currentElement || !['title', 'text', 'list'].includes(currentElement.type)) {
+    if (
+      !currentElement ||
+      !['title', 'text', 'list'].includes(currentElement.type)
+    ) {
       return;
     }
 
@@ -473,7 +479,7 @@ export function usePresentationEditor({
       const newElement = await createElement(
         slideId,
         'image',
-        { url },
+        { resolvedImage: { url } },
         80,
         120,
         280,

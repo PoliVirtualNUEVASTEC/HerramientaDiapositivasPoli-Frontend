@@ -93,8 +93,11 @@ const renderElement = (element) => {
     return (
       <img
         key={element.id}
-        src={element.content?.url || element.content?.image}
-        alt=""
+        src={
+          element.content?.resolvedImage.url ||
+          element.content?.resolvedImage.image
+        }
+        alt={element.content.resolvedImage.alt}
         style={{ ...style, objectFit: 'fill' }}
         crossOrigin="anonymous"
       />
