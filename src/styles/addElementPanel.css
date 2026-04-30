@@ -62,7 +62,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 100%; /* 🔥 evita que todo haga scroll */
+  height: 100%; /* evita que todo haga scroll */
   overflow-y: auto;
 }
 
@@ -168,15 +168,15 @@
 }
 
 /* ========================= */
-/* 🔥 TEMPLATE GRID */
+/* TEMPLATE GRID */
 /* ========================= */
 
 .template-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 10px;
 
-  max-height: 260px; /* 🔥 scroll solo aquí */
+  max-height: auto; /* scroll solo aquí */
   overflow-y: auto;
 }
 
@@ -191,7 +191,6 @@
   overflow: hidden;
   cursor: pointer;
 
-  transition: all 0.2s;
   background: #f8fafc;
 
   display: flex;

@@ -16,6 +16,7 @@
 .slide-list-block {
   display: grid;
   gap: 8px;
+  aspect-ratio: 16 / 9;
 }
 
 .slide-list-item {
