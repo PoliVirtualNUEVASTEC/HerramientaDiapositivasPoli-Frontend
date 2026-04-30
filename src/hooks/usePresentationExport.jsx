@@ -301,7 +301,9 @@ export function usePresentationExport(presentation) {
 
       for (const presentationSlide of presentation.slides) {
         const pptSlide = pptx.addSlide();
-        const backgroundColor = getBackgroundColor(presentationSlide.background);
+        const backgroundColor = getBackgroundColor(
+          presentationSlide.background,
+        );
         const backgroundImageUrl = getBackgroundImageUrl(
           presentationSlide.background,
         );
@@ -339,7 +341,9 @@ export function usePresentationExport(presentation) {
           }
 
           if (element.type === 'image') {
-            const imageUrl = element.content?.url || element.content?.image;
+            const imageUrl =
+              element.content?.resolvedImage.url ||
+              element.content?.resolvedImage.image;
             const imageSource = await getImageSource(imageUrl);
 
             if (!imageSource) continue;
