@@ -9,12 +9,38 @@ import ListOfPresentations from '../components/ListofPresentations';
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const MIN_SLIDES = 4;
+  const MAX_SLIDES = 20;
 
   const [mode, setMode] = useState('pdf');
   const [file, setFile] = useState(null);
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [numberOfSlides, setNumberOfSlides] = useState(7);
+  const [slidesInputValue, setSlidesInputValue] = useState('7');
+
+  const clampSlides = (value) =>
+    Math.min(MAX_SLIDES, Math.max(MIN_SLIDES, value));
+
+  const syncSlidesValue = (value) => {
+    const nextValue = clampSlides(value);
+    setNumberOfSlides(nextValue);
+    setSlidesInputValue(String(nextValue));
+    return nextValue;
+  };
+
+  const commitSlidesInput = () => {
+    if (slidesInputValue.trim() === '') {
+      setSlidesInputValue(String(numberOfSlides));
+      return numberOfSlides;
+    }
+
+    return syncSlidesValue(Number(slidesInputValue));
+  };
+
+  const currentSlidesValue =
+    slidesInputValue.trim() === '' ? numberOfSlides : Number(slidesInputValue);
 
   const validateAndSet = (selected) => {
     if (!selected) return;
@@ -48,7 +74,6 @@ export default function Dashboard() {
       title: data?.title || mockPresentation.title,
       createdAt: new Date(data.createdAt).toLocaleDateString('es-CO'),
     };
-    console.log(data.presentationAI);
     navigate(`/preview/${presentation.id}`);
   };
 
@@ -60,7 +85,8 @@ export default function Dashboard() {
     }
     try {
       setLoading(true);
-      const data = await uploadPDF(file);
+      const slidesToUse = commitSlidesInput();
+      const data = await uploadPDF(file, slidesToUse);
       toast.success('PDF procesado correctamente');
       handleSuccess(data);
     } catch (err) {
@@ -80,7 +106,8 @@ export default function Dashboard() {
     }
     try {
       setLoading(true);
-      const data = await sendText(text);
+      const slidesToUse = commitSlidesInput();
+      const data = await sendText(text, slidesToUse);
       toast.success('Texto procesado correctamente');
       handleSuccess(data);
     } catch (err) {
@@ -107,18 +134,60 @@ export default function Dashboard() {
           </p>
 
           <div className="tabs">
-            <button
-              className={mode === 'text' ? 'tab-btn active' : 'tab-btn'}
-              onClick={() => setMode('text')}
-            >
-              Escribir Texto
-            </button>
-            <button
-              className={mode === 'pdf' ? 'tab-btn active' : 'tab-btn'}
-              onClick={() => setMode('pdf')}
-            >
-              Subir Archivo
-            </button>
+            <div className="tabs-group">
+              <button
+                className={mode === 'text' ? 'tab-btn active' : 'tab-btn'}
+                onClick={() => setMode('text')}
+                type="button"
+              >
+                Escribir Texto
+              </button>
+              <button
+                className={mode === 'pdf' ? 'tab-btn active' : 'tab-btn'}
+                onClick={() => setMode('pdf')}
+                type="button"
+              >
+                Subir Archivo
+              </button>
+            </div>
+
+            <div className="slides-counter">
+              <span className="slides-counter-label">N. diapositivas</span>
+              <div className="slides-counter-controls">
+                <button
+                  className="slides-counter-btn"
+                  type="button"
+                  onClick={() => syncSlidesValue(currentSlidesValue - 1)}
+                  disabled={currentSlidesValue <= MIN_SLIDES}
+                  aria-label="Restar diapositivas"
+                >
+                  -
+                </button>
+                <input
+                  className="slides-counter-input"
+                  type="number"
+                  min={MIN_SLIDES}
+                  max={MAX_SLIDES}
+                  value={slidesInputValue}
+                  onChange={(e) => {
+                    if (!/^\d*$/.test(e.target.value)) {
+                      return;
+                    }
+                    setSlidesInputValue(e.target.value);
+                  }}
+                  onBlur={commitSlidesInput}
+                />
+                <button
+                  className="slides-counter-btn"
+                  type="button"
+                  onClick={() => syncSlidesValue(currentSlidesValue + 1)}
+                  disabled={currentSlidesValue >= MAX_SLIDES}
+                  aria-label="Sumar diapositivas"
+                >
+                  +
+                </button>
+              </div>
+            </div>
           </div>
 
           {mode === 'pdf' && (

@@ -1,9 +1,10 @@
 import api from '../api/axios';
 
 // PDF
-export const uploadPDF = async (file) => {
+export const uploadPDF = async (file, numberOfSlides) => {
   const formData = new FormData();
   formData.append('file', file);
+  formData.append('numberOfSlides', numberOfSlides);
 
   const res = await api.post('/api/presentations/pdf', formData, {
     headers: {
@@ -15,8 +16,11 @@ export const uploadPDF = async (file) => {
 };
 
 // TEXTO
-export const sendText = async (text) => {
-  const res = await api.post('/api/presentations/text', { text });
+export const sendText = async (text, numberOfSlides) => {
+  const res = await api.post('/api/presentations/text', {
+    text,
+    numberOfSlides,
+  });
   return res.data;
 };
 
