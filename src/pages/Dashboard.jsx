@@ -121,6 +121,7 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
+      <div className="dashboard-background" />
       <div className="dashboard-overlay" />
       <Navbar />
 

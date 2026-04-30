@@ -25,6 +25,25 @@ export default function ListOfPresentations() {
     return new Date(date).toLocaleDateString('es-CO');
   };
 
+  const getThumbnailStyle = (presentation) => {
+    const background = presentation.firstSlide?.background;
+    const imageUrl = background?.url || background?.image;
+
+    if (background?.type === 'image' && imageUrl) {
+      return {
+        backgroundImage: `url("${imageUrl}")`,
+      };
+    }
+
+    if (background?.type === 'color') {
+      return {
+        backgroundColor: background.color || background.value,
+      };
+    }
+
+    return {};
+  };
+
   const handleDelete = (id) => {
     setIsDisabled(true);
     showConfirm({
@@ -48,40 +67,50 @@ export default function ListOfPresentations() {
   return (
     <>
       {presentations.length > 0 && (
-        <div className="presentations-list">
+        <div className="dashboard-presentations-list">
           <h2>Mis presentaciones</h2>
-          <div className="presentations-grid">
-            {presentations.map((p) => (
-              <div key={p.id} className="presentation-item">
+          <div className="dashboard-presentations-grid">
+            {presentations.map((presentation) => (
+              <div
+                key={presentation.id}
+                className="dashboard-presentation-item"
+              >
                 <div
-                  className="presentation-thumbnail"
+                  className="dashboard-presentation-thumbnail"
+                  style={getThumbnailStyle(presentation)}
                   onClick={() =>
-                    navigate(`/preview/${p.id}`, {
-                      state: { presentation: p },
+                    navigate(`/preview/${presentation.id}`, {
+                      state: { presentation },
                     })
                   }
                 >
-                  <div className="thumbnail-slides-count">
-                    {p.slides?.length || 0} slides
+                  <div className="dashboard-thumbnail-slides-count">
+                    {presentation.slidesCount || 0} slides
                   </div>
-                  <div className="thumbnail-icon">🖼️</div>
+                  <div className="dashboard-presentation-thumbnail-overlay">
+                    <span className="dashboard-thumbnail-title">
+                      {presentation.firstSlide?.title || presentation.title}
+                    </span>
+                  </div>
                 </div>
-                <div className="presentation-info">
-                  <span className="presentation-title">{p.title}</span>
-                  <span className="presentation-date">
-                    {formatDate(p.createdAt)}
+                <div className="dashboard-presentation-info">
+                  <span className="dashboard-presentation-title">
+                    {presentation.title}
+                  </span>
+                  <span className="dashboard-presentation-date">
+                    {formatDate(presentation.createdAt)}
                   </span>
                 </div>
-                <div className="presentation-actions">
+                <div className="dashboard-presentation-actions">
                   <button
-                    className="action-btn view-btn"
-                    onClick={() => navigate(`/preview/${p.id}`)}
+                    className="dashboard-action-btn dashboard-view-btn"
+                    onClick={() => navigate(`/preview/${presentation.id}`)}
                   >
                     Ver
                   </button>
                   <button
-                    className="action-btn delete-btn"
-                    onClick={() => handleDelete(p.id)}
+                    className="dashboard-action-btn dashboard-delete-btn"
+                    onClick={() => handleDelete(presentation.id)}
                     disabled={isDisabled}
                   >
                     Eliminar

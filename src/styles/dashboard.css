@@ -1,25 +1,44 @@
 .dashboard-container {
   min-height: 100vh;
   width: 100%;
-  background-image: url("/images/background.jpg");
-  background-size: cover;
-  background-position: center;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding-top: 80px;
+  isolation: isolate;
+}
+
+.dashboard-background {
+  position: fixed;
+  inset: 0;
+  background-image: url("/images/background.jpg");
+  background-size: cover;
+  background-position: center;
+  z-index: -2;
 }
 
 .dashboard-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
   background: rgba(255, 255, 255, 0.50);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
-  z-index: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.dashboard-container .dashboard-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  padding: 20px 0 48px;
 }
 
 .dashboard-card {
@@ -267,6 +286,159 @@
   margin-bottom: 4px;
 }
 
+.dashboard-presentations-list {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1180px;
+  margin: 28px auto 40px;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+.dashboard-presentations-list h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a4d1a;
+  margin: 0 0 18px;
+}
+
+.dashboard-presentations-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.dashboard-presentation-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(26, 92, 26, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.dashboard-presentation-thumbnail {
+  position: relative;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e9f5e9 0%, #d3ebd3 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.dashboard-thumbnail-slides-count {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1a5c1a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dashboard-presentation-thumbnail-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  padding: 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 24, 10, 0.08) 0%,
+    rgba(10, 24, 10, 0.72) 100%
+  );
+}
+
+.dashboard-thumbnail-title {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.dashboard-presentation-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 16px 12px;
+  min-width: 0;
+}
+
+.dashboard-presentation-title {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #1e1e1e;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.dashboard-presentation-date {
+  color: #6b6b6b;
+  font-size: 13px;
+}
+
+.dashboard-presentation-actions {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px 16px;
+  margin-top: auto;
+}
+
+.dashboard-action-btn {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.dashboard-view-btn {
+  background: #1a5c1a;
+  color: white;
+}
+
+.dashboard-view-btn:hover {
+  background: #145214;
+}
+
+.dashboard-delete-btn {
+  background: #f4e4e4;
+  color: #8a1f1f;
+}
+
+.dashboard-delete-btn:hover:not(:disabled) {
+  background: #edd2d2;
+}
+
+.dashboard-delete-btn:disabled,
+.dashboard-view-btn:disabled,
+.dashboard-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .slide {
   border: 1px solid #e0e0e0;
   border-radius: 10px;
@@ -304,5 +476,15 @@
 
   .slides-counter {
     justify-content: space-between;
+  }
+
+  .dashboard-presentations-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 980px) {
+  .dashboard-presentations-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
