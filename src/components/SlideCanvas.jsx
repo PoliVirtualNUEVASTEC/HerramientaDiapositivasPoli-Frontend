@@ -31,7 +31,7 @@ export default function SlideCanvas({
       style={{
         ...getTemplate,
         position: 'relative',
-        backgroundSize: 'cover',
+        backgroundSize: 'contain',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
         minHeight: '600px',
