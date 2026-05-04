@@ -1,7 +1,8 @@
 import axios from 'axios';
 
+const backend_url = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 const api = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: backend_url,
   withCredentials: true,
 });
 
