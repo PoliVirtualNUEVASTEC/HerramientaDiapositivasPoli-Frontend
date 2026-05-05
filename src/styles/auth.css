@@ -1,7 +1,7 @@
 .auth-container {
   height: 100vh;
   background: #f7f7f7;
-  background-image: url("/images/background.jpg");
+  background-image: url("https://qftsvgnhxcqdrcarvsiq.supabase.co/storage/v1/object/public/images/utils/background.jpg");
   background-size: cover;
   background-position: center;
   position: relative;

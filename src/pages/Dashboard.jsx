@@ -5,7 +5,7 @@ import mockPresentation from '../assets/presentation.json';
 import Navbar from '../components/Navbar';
 import { sendText, uploadPDF } from '../services/presentationService';
 import '../styles/dashboard.css';
-import ListOfPresentations from '../components/ListofPresentations';
+import ListOfPresentations from '../components/ListOfPresentations';
 
 export default function Dashboard() {
   const navigate = useNavigate();
