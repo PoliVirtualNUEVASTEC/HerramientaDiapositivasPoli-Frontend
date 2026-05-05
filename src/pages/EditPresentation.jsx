@@ -76,6 +76,10 @@ export default function EditPresentation() {
     setSelectedSlideIndex,
   });
 
+  const handleStageHeightChange = useCallback((nextHeight) => {
+    setEditCanvasHeight(nextHeight);
+  }, []);
+
   if (loading || !presentation) {
     return (
       <div className="preview-container">
@@ -121,10 +125,6 @@ export default function EditPresentation() {
       console.error('Error aplicando plantilla:', error);
     }
   };
-
-  const handleStageHeightChange = useCallback((nextHeight) => {
-    setEditCanvasHeight(nextHeight);
-  }, []);
 
   return (
     <div className="preview-container">
