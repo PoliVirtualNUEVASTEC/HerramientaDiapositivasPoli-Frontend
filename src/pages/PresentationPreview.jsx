@@ -2,7 +2,7 @@ import { ChevronDown, FileDown, Play } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import PresentationPlayer from '../components/PresentationPlayer';
-import PresentationSlideCanvas from '../components/PresentationSlideCanvas';
+import ResponsivePreviewSlide from '../components/ResponsivePreviewSlide';
 import { usePresentationExport } from '../hooks/usePresentationExport';
 import { usePresentationLoader } from '../hooks/usePresentationLoader';
 import { usePresentationPlayer } from '../hooks/usePresentationPlayer';
@@ -127,7 +127,7 @@ export default function PresentationPreview() {
               Slide {index + 1} — {slide.title}
             </div>
 
-            <PresentationSlideCanvas
+            <ResponsivePreviewSlide
               ref={(node) => registerSlideNode(slide.id, node)}
               slide={slide}
             />

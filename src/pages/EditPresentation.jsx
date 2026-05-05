@@ -1,9 +1,10 @@
 import { CheckCircle, Loader } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AddElementPanel from '../components/AddElementPanel';
 import EditToolbar from '../components/EditToolbar';
 import Navbar from '../components/Navbar';
-import SlideCanvas from '../components/SlideCanvas';
+import ResponsiveEditCanvas from '../components/ResponsiveEditCanvas';
 import SlideSidebar from '../components/SlideSidebar';
 import { useAddSlideTemplates } from '../hooks/useAddSlideTemplates';
 import { usePresentationEditor } from '../hooks/usePresentationEditor';
@@ -16,6 +17,7 @@ import { getSlideTemplateStyles } from '../utils/presentationTemplates';
 export default function EditPresentation() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [editCanvasHeight, setEditCanvasHeight] = useState(540);
   const presentationFromStore = usePresentationStore(
     (state) => state.presentation,
   );
@@ -120,6 +122,10 @@ export default function EditPresentation() {
     }
   };
 
+  const handleStageHeightChange = useCallback((nextHeight) => {
+    setEditCanvasHeight(nextHeight);
+  }, []);
+
   return (
     <div className="preview-container">
       <Navbar />
@@ -174,7 +180,10 @@ export default function EditPresentation() {
         onListTypeToggle={handleListTypeToggle}
       />
 
-      <div className="edit-layout">
+      <div
+        className="edit-layout"
+        style={{ '--edit-canvas-height': `${editCanvasHeight}px` }}
+      >
         {presentationData && (
           <>
             <AddElementPanel
@@ -184,27 +193,30 @@ export default function EditPresentation() {
               onAddTemplate={addSlideWithTemplate}
               onApplyTemplate={handleApplyTemplate}
             />
-            <SlideSidebar
-              slides={presentationData.slides}
-              selectedSlideIndex={selectedSlideIndex}
-              onSelectSlide={setSelectedSlideIndex}
-              presentationData={presentationData}
-              onPresentationChange={setPresentationState}
-            />
 
-            <main className="edit-main-preview">
-              <SlideCanvas
-                key={selectedSlide?.id}
-                selectedSlide={selectedSlide}
-                getTemplate={getSlideTemplateStyles(selectedSlide)}
-                onElementClick={handleElementClick}
-                selectedElement={selectedElement}
-                onCanvasClick={handleCanvasClick}
-                isEditingText={isEditingText}
-                onElementChange={handleElementChange}
-                onEditBlur={() => setIsEditingText(false)}
+            <div className="edit-workspace">
+              <SlideSidebar
+                slides={presentationData.slides}
+                selectedSlideIndex={selectedSlideIndex}
+                onSelectSlide={setSelectedSlideIndex}
+                presentationData={presentationData}
+                onPresentationChange={setPresentationState}
               />
-            </main>
+              <main className="edit-main-preview">
+                <ResponsiveEditCanvas
+                  key={selectedSlide?.id}
+                  onStageHeightChange={handleStageHeightChange}
+                  selectedSlide={selectedSlide}
+                  getTemplate={getSlideTemplateStyles(selectedSlide)}
+                  onElementClick={handleElementClick}
+                  selectedElement={selectedElement}
+                  onCanvasClick={handleCanvasClick}
+                  isEditingText={isEditingText}
+                  onElementChange={handleElementChange}
+                  onEditBlur={() => setIsEditingText(false)}
+                />
+              </main>
+            </div>
           </>
         )}
       </div>

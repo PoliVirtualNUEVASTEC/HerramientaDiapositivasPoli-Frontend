@@ -11,6 +11,10 @@ const INITIAL_DRAG_STATE = {
   startWidth: 0,
   startHeight: 0,
   canvasRect: null,
+  canvasWidth: 0,
+  canvasHeight: 0,
+  scaleX: 1,
+  scaleY: 1,
   pointerId: null,
   target: null,
 };
@@ -35,18 +39,44 @@ export function useSlideCanvasInteractions({
     [],
   );
 
+  const getCanvasMetrics = useCallback(() => {
+    const canvasNode = canvasRef.current;
+    const canvasRect = canvasNode?.getBoundingClientRect();
+
+    if (!canvasNode || !canvasRect) {
+      return null;
+    }
+
+    const canvasWidth = canvasNode.offsetWidth || canvasRect.width;
+    const canvasHeight = canvasNode.offsetHeight || canvasRect.height;
+
+    return {
+      canvasRect,
+      canvasWidth,
+      canvasHeight,
+      scaleX: canvasRect.width / canvasWidth || 1,
+      scaleY: canvasRect.height / canvasHeight || 1,
+    };
+  }, []);
+
   const getResizeBounds = useCallback(
     ({ dx, dy, handle, maintainAspectRatio }) => {
-      const { startLeft, startTop, startWidth, startHeight, canvasRect } =
-        dragRef.current;
+      const {
+        startLeft,
+        startTop,
+        startWidth,
+        startHeight,
+        canvasWidth,
+        canvasHeight,
+      } = dragRef.current;
       const minWidth = 40;
       const minHeight = 30;
       let left = startLeft;
       let top = startTop;
       let width = startWidth;
       let height = startHeight;
-      const maxWidth = canvasRect.width;
-      const maxHeight = canvasRect.height;
+      const maxWidth = canvasWidth;
+      const maxHeight = canvasHeight;
 
       if (maintainAspectRatio && handle) {
         const ratio = startWidth / startHeight;
@@ -105,8 +135,8 @@ export function useSlideCanvasInteractions({
       const drag = dragRef.current;
       if (drag.mode === 'idle' || !drag.canvasRect) return;
 
-      const dx = event.clientX - drag.startX;
-      const dy = event.clientY - drag.startY;
+      const dx = (event.clientX - drag.startX) / drag.scaleX;
+      const dy = (event.clientY - drag.startY) / drag.scaleY;
 
       if (drag.mode === 'pending') {
         const distance = Math.hypot(dx, dy);
@@ -118,12 +148,12 @@ export function useSlideCanvasInteractions({
         const left = clamp(
           drag.startLeft + dx,
           0,
-          drag.canvasRect.width - drag.startWidth,
+          drag.canvasWidth - drag.startWidth,
         );
         const top = clamp(
           drag.startTop + dy,
           0,
-          drag.canvasRect.height - drag.startHeight,
+          drag.canvasHeight - drag.startHeight,
         );
 
         onElementChangeRef.current(drag.elementId, {
@@ -174,8 +204,8 @@ export function useSlideCanvasInteractions({
       if (selectedElementRef.current?.id !== element.id) return;
 
       event.stopPropagation();
-      const canvasRect = canvasRef.current?.getBoundingClientRect();
-      if (!canvasRect) return;
+      const canvasMetrics = getCanvasMetrics();
+      if (!canvasMetrics) return;
 
       dragRef.current = {
         mode: 'pending',
@@ -187,7 +217,11 @@ export function useSlideCanvasInteractions({
         startTop: element.positionY,
         startWidth: element.width,
         startHeight: element.height,
-        canvasRect,
+        canvasRect: canvasMetrics.canvasRect,
+        canvasWidth: canvasMetrics.canvasWidth,
+        canvasHeight: canvasMetrics.canvasHeight,
+        scaleX: canvasMetrics.scaleX,
+        scaleY: canvasMetrics.scaleY,
         pointerId: event.pointerId,
         target: event.currentTarget,
       };
@@ -196,7 +230,7 @@ export function useSlideCanvasInteractions({
       document.addEventListener('pointermove', handlePointerMove);
       document.addEventListener('pointerup', handlePointerUp);
     },
-    [handlePointerMove, handlePointerUp, isEditingText],
+    [getCanvasMetrics, handlePointerMove, handlePointerUp, isEditingText],
   );
 
   useEffect(() => {
