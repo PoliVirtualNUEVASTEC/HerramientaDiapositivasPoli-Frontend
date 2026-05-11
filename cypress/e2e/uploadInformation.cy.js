@@ -1,5 +1,6 @@
 describe('Login and Register', () => {
   beforeEach(() => {
+    cy.viewport(1920, 1080);     
     cy.visit('/login');
     cy.login();
   });
