@@ -109,8 +109,18 @@ export default function SlideSidebarItem({
         <div className="slide-list-item-content">
           <span className="slide-item-number">{index + 1}</span>
           <div className="slide-item-text">
-            <strong>{slide.title || 'Sin título'}</strong>
-            <p>{slide.elements?.[0]?.content?.text || 'Sin contenido'}</p>
+            <strong
+              className="slide-item-title"
+              title={slide.title || 'Sin título'}
+            >
+              {slide.title || 'Sin título'}
+            </strong>
+            <p
+              className="slide-item-summary"
+              title={slide.elements?.[0]?.content?.text || 'Sin contenido'}
+            >
+              {slide.elements?.[0]?.content?.text || 'Sin contenido'}
+            </p>
           </div>
         </div>
 
