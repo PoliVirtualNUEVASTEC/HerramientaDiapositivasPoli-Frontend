@@ -13,12 +13,16 @@
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
+  box-sizing: border-box;
+  min-width: 0;
+  scrollbar-gutter: stable;
 }
 
 .slide-list-block {
   display: grid;
-  gap: 8px;
-  aspect-ratio: 16 / 9;
+  grid-template-rows: 112px auto;
+  gap: 6px;
+  min-width: 0;
 }
 
 .slide-list-item {
@@ -39,8 +43,10 @@
     background 0.2s ease;
   user-select: none;
   width: 100%;
+  height: 112px;
   min-width: 0;
-  overflow: visible;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .slide-list-item:hover {
@@ -76,34 +82,48 @@
   gap: 12px;
   align-items: flex-start;
   width: 100%;
+  height: 100%;
   min-width: 0;
-  padding-right: 40px;
+  padding-right: 32px;
+  box-sizing: border-box;
 }
 
 .slide-item-text {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  justify-content: flex-start;
   width: 100%;
   text-align: left;
   min-width: 0;
+  overflow: hidden;
 }
 
-.slide-list-item strong {
+.slide-item-title {
+  display: -webkit-box;
   color: #111827;
-  font-size: 15px;
+  font-size: 14px;
+  line-height: 1.2;
   margin: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
 }
 
-.slide-list-item p {
+.slide-item-summary {
   margin: 0;
   color: #4b5563;
-  font-size: 13px;
+  font-size: 12px;
   white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  line-height: 1.25;
 }
 
 .slide-item-actions {
