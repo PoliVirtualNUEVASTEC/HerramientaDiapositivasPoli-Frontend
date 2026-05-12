@@ -44,14 +44,14 @@ Comportamiento:
 
 ```mermaid
 flowchart TD
-    Root[/]
-    Login[/login]
-    Register[/register]
-    Forgot[/forgot-password]
-    Reset[/reset-password]
-    Dashboard[/dashboard]
-    Preview[/preview/:id]
-    Edit[/edit/:id]
+    Root["/"]
+    Login["/login"]
+    Register["/register"]
+    Forgot["/forgot-password"]
+    Reset["/reset-password"]
+    Dashboard["/dashboard"]
+    Preview["/preview/:id"]
+    Edit["/edit/:id"]
 
     Root --> Dashboard
     Root --> Register

@@ -192,7 +192,7 @@ Observaciones:
 
 ## Pruebas detectadas
 
-El repositorio incluye pruebas E2E para:
+El repositorio (en la rama automatized-tests) incluye pruebas E2E para:
 
 - login y registro
 - carga de informacion
